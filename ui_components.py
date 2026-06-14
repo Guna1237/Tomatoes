@@ -11,17 +11,17 @@ GLOBAL_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 :root {
-  --bg-primary: #eff6ee;
-  --bg-secondary: #ffffff;
-  --sidebar: #273043;
-  --sidebar-hover: #323d56;
-  --text-primary: #273043;
-  --text-secondary: #6b7280;
-  --border: #e5e7eb;
-  --accent: #dd0426;
-  --accent-hover: #f02d3a;
-  --success: #10b981;
-  --warning: #f59e0b;
+  --bg-primary: #0F1117;
+  --bg-secondary: #161B22;
+  --sidebar: #161B22;
+  --sidebar-hover: #2D3748;
+  --text-primary: #FFFFFF;
+  --text-secondary: #94A3B8;
+  --border: #2D3748;
+  --accent: #3B82F6;
+  --accent-hover: #60A5FA;
+  --success: #22C55E;
+  --warning: #F59E0B;
 }
 
 /* Apply base light theme and layout settings */
@@ -290,7 +290,7 @@ div[data-testid="stFileUploader"] {
     width: 250px;
     height: 100vh;
     background-color: var(--sidebar);
-    color: #ffffff;
+    color: var(--text-primary);
     z-index: 999999;
     transition: width 0.3s ease;
     display: flex;
@@ -319,10 +319,10 @@ body.sidebar-collapsed [data-testid="stAppViewContainer"] .block-container {
     display: flex;
     align-items: center;
     gap: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid var(--border);
 }
 .sidebar-header h2 {
-    color: #ffffff;
+    color: var(--text-primary);
     margin: 0;
     font-size: 1.25rem;
     font-weight: 700;
@@ -339,7 +339,7 @@ body.sidebar-collapsed [data-testid="stAppViewContainer"] .block-container {
 .sidebar-toggle {
     background: none;
     border: none;
-    color: #ffffff;
+    color: var(--text-primary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -365,7 +365,7 @@ body.sidebar-collapsed [data-testid="stAppViewContainer"] .block-container {
     align-items: center;
     gap: 12px;
     padding: 10px 1.5rem;
-    color: #94A3B8;
+    color: var(--text-secondary);
     text-decoration: none;
     font-weight: 500;
     font-size: 0.95rem;
@@ -374,11 +374,11 @@ body.sidebar-collapsed [data-testid="stAppViewContainer"] .block-container {
 }
 .nav-item:hover {
     background-color: var(--sidebar-hover);
-    color: #ffffff;
+    color: var(--text-primary);
 }
 .nav-item.active {
     background-color: var(--accent);
-    color: #ffffff;
+    color: var(--text-primary);
     border-right: 4px solid #ffffff;
 }
 .custom-sidebar.collapsed .nav-text {
@@ -519,7 +519,7 @@ def render_timeline(status: str):
         current_idx = 0
         
     html = '<div class="premium-card fade-in" style="margin-bottom: 1.5rem;">'
-    html += '<h4 style="margin-top: 0; margin-bottom: 1rem; color: #FFFFFF; font-size: 1rem; display: flex; align-items: center; gap: 8px;"><i data-lucide="truck" style="width: 18px; color: #3B82F6;"></i> Active Delivery Progress</h4>'
+    html += '<h4 style="margin-top: 0; margin-bottom: 1rem; color: var(--text-primary); font-size: 1rem; display: flex; align-items: center; gap: 8px;"><i data-lucide="truck" style="width: 18px; color: #3B82F6;"></i> Active Delivery Progress</h4>'
     html += '<div style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 10px 0; overflow-x: auto;">'
     
     # Draw horizontal bar background
@@ -561,11 +561,11 @@ def render_empty_state(title: str, description: str, icon: str = "inbox"):
     """
     st.markdown(f"""
 <div class="premium-card fade-in" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1.5rem; text-align: center; border-style: dashed;">
-<div style="background-color: rgba(45, 55, 72, 0.3); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #94A3B8; margin-bottom: 1rem; border: 1px solid #2D3748;">
+<div style="background-color: rgba(45, 55, 72, 0.3); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); margin-bottom: 1rem; border: 1px solid var(--border);">
 <i data-lucide="{icon}" style="width: 30px; height: 30px;"></i>
 </div>
-<h4 style="margin: 0; color: #FFFFFF; font-size: 1.1rem; font-weight: 600;">{title}</h4>
-<p style="margin: 0.5rem 0 0 0; color: #94A3B8; font-size: 0.9rem; max-width: 350px;">{description}</p>
+<h4 style="margin: 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 600;">{title}</h4>
+<p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem; max-width: 350px;">{description}</p>
 </div>
 """, unsafe_allow_html=True)
     st.markdown(LUCIDE_CDN, unsafe_allow_html=True)
@@ -613,7 +613,7 @@ SIDEBAR_CSS = """
     width: 250px;
     height: 100vh;
     background-color: var(--sidebar);
-    color: #ffffff;
+    color: var(--text-primary);
     z-index: 999999;
     transition: width 0.3s ease;
     display: flex;
@@ -642,10 +642,10 @@ body.sidebar-collapsed [data-testid="stAppViewContainer"] .block-container {
     display: flex;
     align-items: center;
     gap: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid var(--border);
 }
 .sidebar-header h2 {
-    color: #ffffff;
+    color: var(--text-primary);
     margin: 0;
     font-size: 1.25rem;
     font-weight: 700;
@@ -662,7 +662,7 @@ body.sidebar-collapsed [data-testid="stAppViewContainer"] .block-container {
 .sidebar-toggle {
     background: none;
     border: none;
-    color: #ffffff;
+    color: var(--text-primary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -688,7 +688,7 @@ body.sidebar-collapsed [data-testid="stAppViewContainer"] .block-container {
     align-items: center;
     gap: 12px;
     padding: 10px 1.5rem;
-    color: #94A3B8;
+    color: var(--text-secondary);
     text-decoration: none;
     font-weight: 500;
     font-size: 0.95rem;
@@ -697,11 +697,11 @@ body.sidebar-collapsed [data-testid="stAppViewContainer"] .block-container {
 }
 .nav-item:hover {
     background-color: var(--sidebar-hover);
-    color: #ffffff;
+    color: var(--text-primary);
 }
 .nav-item.active {
     background-color: var(--accent);
-    color: #ffffff;
+    color: var(--text-primary);
     border-right: 4px solid #ffffff;
 }
 .custom-sidebar.collapsed .nav-text {
@@ -765,6 +765,14 @@ def render_custom_sidebar(user, current_page):
         {"name": "Profile", "icon": "user"}
     ]
     
+    with st.sidebar:
+        if st.button("HID_NAV_SignOut", key="nav_btn_signout"):
+            st.session_state.current_page = "SignOut"
+            try:
+                st.experimental_set_query_params(page="SignOut")
+            except:
+                pass
+            safe_rerun()
     html = f"""
 <style>{SIDEBAR_CSS}
 @media (max-width: 768px) {{
@@ -788,21 +796,38 @@ def render_custom_sidebar(user, current_page):
 <div class="sidebar-nav">
 """
     
+    # Create hidden native Streamlit buttons in the sidebar for routing without hard reloads
+    with st.sidebar:
+        for item in nav_items:
+            if st.button(f"HID_NAV_{item['name']}", key=f"nav_btn_{item['name']}"):
+                st.session_state.current_page = item["name"]
+                try:
+                    st.experimental_set_query_params(page=item["name"])
+                except:
+                    pass
+                safe_rerun()
+
     for item in nav_items:
         active_class = "active" if current_page == item["name"] else ""
-        html += f"""<a href="javascript:void(0);" onclick="window.top.location.href = window.top.location.pathname + '?page=' + encodeURIComponent('{item['name']}');" class="nav-item {active_class}">
+        
+        # We use JS to find the hidden Streamlit button by its text and invoke a click
+        click_js = f"const btns = window.parent.document.querySelectorAll('.stButton button'); btns.forEach(b => {{ if(b.innerText.includes('HID_NAV_{item['name']}')) b.click(); }});"
+        
+        html += f"""<a style="cursor: pointer;" onclick="{click_js}" class="nav-item {active_class}">
 <i data-lucide="{item['icon']}"></i>
 <span class="nav-text">{item['name']}</span>
 </a>"""
         
     html += f"""</div>
 <div class="sidebar-footer">
-<img src="{user['avatar_url']}" style="width: 36px; height: 36px; border-radius: 50%; background-color:#161B22; border: 1px solid #2D3748;" />
+<img src="{user['avatar_url']}" style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--bg-secondary); border: 1px solid var(--border);" />
 <div class="footer-info" style="overflow: hidden; flex-grow: 1;">
-<div style="font-weight: 600; color: #FFFFFF; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{user['name']}</div>
+<div style="font-weight: 600; color: var(--text-primary); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{user['name']}</div>
 <div style="font-size: 0.75rem; color: var(--success); font-weight: 500;">{user.get('tomatos', 0)} Tomatoes</div>
 </div>
-<a href="/?page=SignOut" target="_parent" class="nav-text" style="color: #94A3B8; margin-left: auto;">
+
+<a style="cursor: pointer;" onclick="const btns = window.parent.document.querySelectorAll('.stButton button'); btns.forEach(b => {{ if(b.innerText.includes('HID_NAV_SignOut')) b.click(); }});" class="nav-text" style="color: var(--text-secondary); margin-left: auto;">
+
 <i data-lucide="log-out" style="width: 18px;"></i>
 </a>
 </div>

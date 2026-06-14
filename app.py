@@ -113,10 +113,12 @@ else:
     
     # Global Search Bar
     search_col1, search_col2 = st.columns([8, 2])
-    with search_col1:
-        global_search = st.text_input('', placeholder='Search anything... (Ctrl + K to focus)', label_visibility='collapsed')
     
-    if global_search:
+    if 'global_search' not in st.session_state:
+        st.session_state.global_search = ''
+        
+    with search_col1:
+        global_search = st.text_input('Global Search', placeholder='Search anything... (Ctrl + K to focus)', label_visibility='collapsed', key='global_search')
         st.info(f'Search results for "{global_search}" would appear here.')
 
     page = current_page

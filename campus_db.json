@@ -1,0 +1,411 @@
+{
+    "users": [
+        {
+            "id": "u-jane-doe",
+            "email": "jane@university.edu",
+            "name": "Jane Doe",
+            "credits": 75,
+            "avatar_url": "https://api.dicebear.com/7.x/adventurer/svg?seed=jane",
+            "role": "club_admin",
+            "created_at": "2026-06-01T10:00:00Z"
+        },
+        {
+            "id": "u-john-smith",
+            "email": "john@university.edu",
+            "name": "John Smith",
+            "credits": 45,
+            "avatar_url": "https://api.dicebear.com/7.x/adventurer/svg?seed=john",
+            "role": "student",
+            "created_at": "2026-06-02T11:00:00Z"
+        },
+        {
+            "id": "u-club-acs",
+            "email": "acs@university.edu",
+            "name": "Association of Computer Students (ACS)",
+            "credits": 150,
+            "avatar_url": "https://api.dicebear.com/7.x/initials/svg?seed=ACS",
+            "role": "club_admin",
+            "created_at": "2026-05-15T09:00:00Z"
+        },
+        {
+            "id": "u-registrar",
+            "email": "registrar@university.edu",
+            "name": "Dr. Arthur (Registrar Office)",
+            "credits": 999,
+            "avatar_url": "https://api.dicebear.com/7.x/bottts/svg?seed=registrar",
+            "role": "admin",
+            "created_at": "2026-05-01T08:00:00Z"
+        }
+    ],
+    "events": [
+        {
+            "id": 1,
+            "title": "HackCampus 2026",
+            "description": "The ultimate 24-hour university hackathon. Team up to solve local campus challenges, build cool prototypes, and win awesome gadgets! Free pizza, energy drinks, and swag for all participants. Organized by ACS.",
+            "banner_url": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=800",
+            "date": "2026-06-25",
+            "time": "10:00",
+            "venue": "Main Auditorium & Lab Area",
+            "organizer_id": "u-club-acs",
+            "organizer_name": "ACS Club",
+            "capacity": 150,
+            "registered_count": 85,
+            "created_at": "2026-06-10T12:00:00Z"
+        },
+        {
+            "id": 2,
+            "title": "Summer Tech Symposium",
+            "description": "Join us for guest lectures from top industry experts in Artificial Intelligence, Cybersecurity, and Software Architecture. Interactive Q&A and networking session following the panel. Organized by ACS.",
+            "banner_url": "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=800",
+            "date": "2026-06-28",
+            "time": "14:00",
+            "venue": "Hall B, Academic Block 2",
+            "organizer_id": "u-club-acs",
+            "organizer_name": "ACS Club",
+            "capacity": 200,
+            "registered_count": 120,
+            "created_at": "2026-06-11T14:00:00Z"
+        },
+        {
+            "id": 3,
+            "title": "Campus Cultural Fest 2026",
+            "description": "A vibrant celebration of music, dance, theater, and international cuisines! Enjoy live band performances, stand-up comedy, and food stalls from local restaurants. Open to all students and faculty.",
+            "banner_url": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800",
+            "date": "2026-07-02",
+            "time": "18:00",
+            "venue": "Open Air Theater",
+            "organizer_id": "u-registrar",
+            "organizer_name": "Student Council",
+            "capacity": 500,
+            "registered_count": 342,
+            "created_at": "2026-06-12T10:00:00Z"
+        }
+    ],
+    "event_registrations": [
+        {
+            "id": "er-1",
+            "event_id": 1,
+            "user_id": "u-jane-doe",
+            "registered_at": "2026-06-12T09:00:00Z",
+            "attended": false
+        },
+        {
+            "id": "er-2",
+            "event_id": 2,
+            "user_id": "u-john-smith",
+            "registered_at": "2026-06-12T09:30:00Z",
+            "attended": false
+        },
+        {
+            "id": "er-3",
+            "event_id": 3,
+            "user_id": "u-jane-doe",
+            "registered_at": "2026-06-13T10:00:00Z",
+            "attended": false
+        },
+        {
+            "id": "er-4",
+            "event_id": 3,
+            "user_id": "u-john-smith",
+            "registered_at": "2026-06-13T10:15:00Z",
+            "attended": false
+        }
+    ],
+    "announcements": [
+        {
+            "id": "a-1",
+            "title": "Spring 2026 Final Exam Schedule",
+            "content": "The official schedule for Spring 2026 Final Exams has been uploaded to the university portal. Exams will commence on July 6th and conclude on July 20th. Please check your course list for exact dates and venues. Make sure your dues are cleared to download admit cards.",
+            "category": "Academic",
+            "priority": "High",
+            "author": "Dr. Arthur (Registrar Office)",
+            "created_at": "2026-06-12T08:30:00Z"
+        },
+        {
+            "id": "a-2",
+            "title": "HackCampus 2026 Registration Closing Soon",
+            "content": "Registration for HackCampus 2026 closes in 48 hours. Ensure your team of 2-4 members has registered on CampusConnect. High-value prizes including iPads, mechanical keyboards, and smart speakers are up for grabs. Don't miss out!",
+            "category": "Clubs",
+            "priority": "High",
+            "author": "Association of Computer Students",
+            "created_at": "2026-06-14T09:00:00Z"
+        },
+        {
+            "id": "a-3",
+            "title": "Campus Placement Drive: TechCorp Recruitment",
+            "content": "TechCorp is visiting campus next week on June 22nd for recruitment of Graduate Engineer Trainees. Eligible branches: CSE, IT, ECE. Minimum CGPA: 7.5. Submit your updated resumes in the Placement Cell by Friday 5 PM.",
+            "category": "Placements",
+            "priority": "High",
+            "author": "Placement Office",
+            "created_at": "2026-06-13T11:00:00Z"
+        },
+        {
+            "id": "a-4",
+            "title": "Hostel B Power Grid Maintenance",
+            "content": "Please note that Hostel Block B will experience a scheduled power outage on Wednesday, June 17th from 9 AM to 1 PM due to electrical grid maintenance and elevator servicing. We regret the inconvenience.",
+            "category": "Hostel",
+            "priority": "Medium",
+            "author": "Hostel Warden",
+            "created_at": "2026-06-14T10:15:00Z"
+        },
+        {
+            "id": "a-5",
+            "title": "Library Extended Hours for Exams",
+            "content": "Starting June 20th, the Central Library will remain open 24/7 until the end of final exams on July 20th. ID cards are mandatory for entry between 10 PM and 6 AM. Quiet study policies will be strictly enforced.",
+            "category": "General",
+            "priority": "Low",
+            "author": "Chief Librarian",
+            "created_at": "2026-06-14T14:30:00Z"
+        }
+    ],
+    "saved_announcements": [
+        {
+            "id": "sa-1",
+            "user_id": "u-jane-doe",
+            "announcement_id": "a-1"
+        },
+        {
+            "id": "sa-2",
+            "user_id": "u-jane-doe",
+            "announcement_id": "a-3"
+        }
+    ],
+    "resources": [
+        {
+            "id": "r-1",
+            "title": "Data Structures & Algorithms Exam Cheat Sheet",
+            "course_code": "CS-201",
+            "course_name": "Data Structures & Algorithms",
+            "category": "Notes",
+            "file_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+            "uploader_id": "u-jane-doe",
+            "uploader_name": "Jane Doe",
+            "bookmarks_count": 12,
+            "created_at": "2026-06-11T15:20:00Z"
+        },
+        {
+            "id": "r-2",
+            "title": "Intro to Algorithms PYQ (Spring 2025)",
+            "course_code": "CS-201",
+            "course_name": "Data Structures & Algorithms",
+            "category": "PYQs",
+            "file_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+            "uploader_id": "u-john-smith",
+            "uploader_name": "John Smith",
+            "bookmarks_count": 8,
+            "created_at": "2026-06-08T10:15:00Z"
+        },
+        {
+            "id": "r-3",
+            "title": "Linear Algebra Lecture 1-10 Slides",
+            "course_code": "MATH-102",
+            "course_name": "Linear Algebra",
+            "category": "PPTs",
+            "file_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+            "uploader_id": "u-jane-doe",
+            "uploader_name": "Jane Doe",
+            "bookmarks_count": 5,
+            "created_at": "2026-06-12T16:40:00Z"
+        },
+        {
+            "id": "r-4",
+            "title": "Web Development Bootcamp Lab Guide",
+            "course_code": "CS-302",
+            "course_name": "Web Technology",
+            "category": "Study guides",
+            "file_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+            "uploader_id": "u-club-acs",
+            "uploader_name": "ACS Club",
+            "bookmarks_count": 25,
+            "created_at": "2026-06-05T09:00:00Z"
+        }
+    ],
+    "bookmarked_resources": [
+        {
+            "id": "br-1",
+            "user_id": "u-jane-doe",
+            "resource_id": "r-1"
+        },
+        {
+            "id": "br-2",
+            "user_id": "u-jane-doe",
+            "resource_id": "r-4"
+        },
+        {
+            "id": "br-3",
+            "user_id": "u-john-smith",
+            "resource_id": "r-1"
+        }
+    ],
+    "peer_logistics": [
+        {
+            "id": "pl-1",
+            "requester_id": "u-jane-doe",
+            "requester_name": "Jane Doe",
+            "helper_id": "u-john-smith",
+            "helper_name": "John Smith",
+            "title": "Library Book Return",
+            "description": "Return 'Introduction to Python' to the library desk. Book is on the desk at Hostel Block A, Room 204. I need it done before library closes at 8 PM.",
+            "pickup_location": "Hostel Block A, Room 204",
+            "delivery_location": "Central Library Counter",
+            "credits_offered": 5,
+            "status": "Delivered",
+            "created_at": "2026-06-12T11:00:00Z",
+            "updated_at": "2026-06-12T13:45:00Z"
+        },
+        {
+            "id": "pl-2",
+            "requester_id": "u-john-smith",
+            "requester_name": "John Smith",
+            "helper_id": null,
+            "helper_name": null,
+            "title": "Lab Manual Pickup",
+            "description": "Pick up my printed Chemistry Lab manual from the Xerox shop. It is already paid for under name John. Please drop it off in C hostel.",
+            "pickup_location": "Campus Xerox Shop",
+            "delivery_location": "Hostel Block C, Room 102",
+            "credits_offered": 5,
+            "status": "Requested",
+            "created_at": "2026-06-14T09:00:00Z",
+            "updated_at": "2026-06-14T09:00:00Z"
+        },
+        {
+            "id": "pl-3",
+            "requester_id": "u-jane-doe",
+            "requester_name": "Jane Doe",
+            "helper_id": "u-john-smith",
+            "helper_name": "John Smith",
+            "title": "Chemistry Notes Handover",
+            "description": "Hand over the organic chemistry lecture notes binder to me. John has it in C block.",
+            "pickup_location": "Hostel Block C Lobby",
+            "delivery_location": "Hostel Block A Room 204",
+            "credits_offered": 5,
+            "status": "Accepted",
+            "created_at": "2026-06-14T10:00:00Z",
+            "updated_at": "2026-06-14T10:30:00Z"
+        }
+    ],
+    "lost_found": [
+        {
+            "id": "lf-1",
+            "title": "Keys with Blue Keychain",
+            "description": "Found a set of 3 keys with a rubber blue rocket keychain on the round cafeteria table. Left them with the cafeteria cashier.",
+            "category": "Accessories",
+            "type": "Found",
+            "location": "Cafeteria",
+            "image_url": "https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&q=80&w=400",
+            "reporter_id": "u-john-smith",
+            "reporter_name": "John Smith",
+            "status": "Open",
+            "created_at": "2026-06-13T14:00:00Z"
+        },
+        {
+            "id": "lf-2",
+            "title": "Black MacBook Air 13-inch",
+            "description": "Forgot my MacBook Air in Lab 3 (Block A) on the middle row. It has a sticker of Octocat on the lid. Please contact if found!",
+            "category": "Electronics",
+            "type": "Lost",
+            "location": "Lab 3, Block A",
+            "image_url": null,
+            "reporter_id": "u-jane-doe",
+            "reporter_name": "Jane Doe",
+            "status": "Open",
+            "created_at": "2026-06-14T12:00:00Z"
+        }
+    ],
+    "credit_transactions": [
+        {
+            "id": "ct-1",
+            "user_id": "u-jane-doe",
+            "amount": -5,
+            "description": "Requested logistics 'Library Book Return'",
+            "created_at": "2026-06-12T11:00:00Z"
+        },
+        {
+            "id": "ct-2",
+            "user_id": "u-john-smith",
+            "amount": 5,
+            "description": "Completed logistics delivery 'Library Book Return'",
+            "created_at": "2026-06-12T13:45:00Z"
+        },
+        {
+            "id": "ct-c5f4c026",
+            "user_id": "u-jane-doe",
+            "amount": -5,
+            "description": "Created delivery request 'Test Package'",
+            "created_at": "2026-06-14T20:47:48.560686"
+        },
+        {
+            "id": "ct-5520a1df",
+            "user_id": "u-john-smith",
+            "amount": 5,
+            "description": "Completed delivery for 'Test Package'",
+            "created_at": "2026-06-14T20:47:48.567208"
+        }
+    ],
+    "notifications": [
+        {
+            "id": "n-1",
+            "user_id": "u-jane-doe",
+            "title": "Welcome to CampusConnect",
+            "content": "Welcome to CampusConnect! Start exploring events, checking announcements, and sharing resources.",
+            "read": false,
+            "created_at": "2026-06-14T08:00:00Z"
+        },
+        {
+            "id": "n-2",
+            "user_id": "u-john-smith",
+            "title": "Delivery Completed",
+            "content": "Your logistics delivery for 'Library Book Return' has been marked as delivered. +5 credits earned!",
+            "read": true,
+            "created_at": "2026-06-12T13:45:00Z"
+        },
+        {
+            "id": "n-3",
+            "user_id": "u-jane-doe",
+            "title": "Logistics Accepted",
+            "content": "John Smith accepted your request 'Chemistry Notes Handover'. Check dashboard for details.",
+            "read": false,
+            "created_at": "2026-06-14T10:30:00Z"
+        },
+        {
+            "user_id": "u-de45b363",
+            "title": "Welcome to CampusConnect",
+            "content": "Hey Test User! Start exploring events, checking announcements, and sharing resources.",
+            "read": false,
+            "created_at": "2026-06-14T20:47:48.556093",
+            "id": "n-3b039ad9"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Delivery Request Created",
+            "content": "Requested 'Test Package'. 5 credits held.",
+            "read": false,
+            "created_at": "2026-06-14T20:47:48.560725",
+            "id": "n-22867a40"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Logistics Request Accepted",
+            "content": "John Smith has accepted your request 'Test Package'.",
+            "read": false,
+            "created_at": "2026-06-14T20:47:48.564158",
+            "id": "n-a22e09f7"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Logistics Status: Delivered",
+            "content": "Your delivery request 'Test Package' is now delivered.",
+            "read": false,
+            "created_at": "2026-06-14T20:47:48.567157",
+            "id": "n-7b7ad6bb"
+        },
+        {
+            "user_id": "u-john-smith",
+            "title": "Credits Earned!",
+            "content": "Earned +5 credits for delivering 'Test Package'.",
+            "read": false,
+            "created_at": "2026-06-14T20:47:48.567220",
+            "id": "n-b07e5127"
+        }
+    ]
+}

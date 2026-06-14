@@ -29,20 +29,29 @@ def render(user: dict):
     
     # --- Tab 1: Explore Events ---
     with tab_explore:
-        col_search, col_filter = st.columns([6, 4])
+        col_search, col_cat, col_toggle = st.columns([5, 3, 2])
         with col_search:
             search_query = st.text_input("Search events...", placeholder="Search by title, description, or venue", key="evt_search")
-        with col_filter:
-            # Simple category tags
-            category_filter = st.selectbox("Filter by organizer", ["All Organizers"] + list(set([e["organizer_name"] for e in events])))
-            
+        with col_cat:
+            all_organizers = sorted(set(e["organizer_name"] for e in events))
+            category_filter = st.selectbox("Filter by organizer", ["All Organizers"] + all_organizers, key="evt_organizer")
+        with col_toggle:
+            st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+            upcoming_only = st.checkbox("Upcoming only", value=True, key="evt_upcoming_only")
+
         # Filter events
+        today_date = datetime.date.today()
         filtered_events = events
+        if upcoming_only:
+            filtered_events = [
+                e for e in filtered_events
+                if datetime.date.fromisoformat(e["date"]) >= today_date
+            ]
         if search_query:
             filtered_events = [
-                e for e in filtered_events 
-                if search_query.lower() in e["title"].lower() 
-                or search_query.lower() in e["description"].lower() 
+                e for e in filtered_events
+                if search_query.lower() in e["title"].lower()
+                or search_query.lower() in e["description"].lower()
                 or search_query.lower() in e["venue"].lower()
             ]
         if category_filter != "All Organizers":
@@ -100,7 +109,7 @@ def render(user: dict):
                     
                     # Streamlit registration buttons
                     if is_registered:
-                        if col.button(f"Unregister from {event['title']}", key=st.session_state.get(f"unreg_{event['id']}", f"unreg_btn_{event['id']}"), use_container_width=True):
+                        if col.button(f"Unregister from {event['title']}", key=f"unreg_btn_{event['id']}", use_container_width=True):
                             services.EventService.unregister(event["id"], user_id)
                             st.success("Unregistered successfully!")
                             ui_components.safe_rerun()

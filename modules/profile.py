@@ -2,168 +2,316 @@ import streamlit as st
 import services
 import ui_components
 
-def render(user: dict):
-    """
-    Renders the Profile & Notification Hub.
-    """
-    user_id = user["id"]
-    
-    # Reload user info to keep tomatos up to date
-    refreshed_user = services.UserService.get_by_id(user_id)
-    if refreshed_user:
-        user = refreshed_user
-        
-    ui_components.page_header(
-        title="Profile & Notifications",
-        subtitle="Manage your profile settings, switch test roles, and check your notification logs.",
-        icon="user"
-    )
-    
-    tab_profile, tab_notifications = st.tabs([
-        "Profile & Stats",
-        "Notification Center"
-    ])
-    
-    # Get statistics
-    all_events = services.EventService.get_user_events(user_id)
-    all_resources = services.ResourceService.get_all()
-    my_resources = [r for r in all_resources if r["uploader_id"] == user_id]
-    
-    all_logistics = services.ParcelService.get_all()
-    completed_jobs = [r for r in all_logistics if r["helper_id"] == user_id and r["status"] == "Delivered"]
-    requested_jobs = [r for r in all_logistics if r["requester_id"] == user_id]
-    
-    # --- Tab 1: Profile & Stats ---
-    with tab_profile:
-        col_avatar, col_info = st.columns([2, 8])
-        
-        with col_avatar:
-            st.markdown(f"""
-            <div style="text-align: center; margin-bottom: 15px;">
-                <img src="{user['avatar_url']}" style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid #3B82F6; background-color: #161B22; padding: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);" />
-            </div>
-            """, unsafe_allow_html=True)
-            
-        with col_info:
-            st.markdown(f"""
-            <h3 style="margin: 0; color: #FFFFFF; font-size: 1.5rem;">{user['name']}</h3>
-            <p style="margin: 4px 0 10px 0; color: #94A3B8; font-size: 0.95rem;">{user['email']}</p>
-            <div style="display: flex; gap: 8px;">
-                <span class="priority-badge" style="background-color: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 600; text-transform: uppercase;">Role: {user['role']}</span>
-                <span class="priority-badge" style="background-color: rgba(34, 197, 94, 0.15); color: #22C55E; border: 1px solid rgba(34, 197, 94, 0.3); font-weight: 600;">{user['tomatos']} Tomatos</span>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        # Stats counters row (Notion-style boxes)
-        st.markdown("<h4 style='color: #FFFFFF; margin-top: 2rem; margin-bottom: 1rem;'>Activity Metrics</h4>", unsafe_allow_html=True)
-        stats_cols = st.columns(4)
-        
-        stats_cols[0].markdown(f"""
-        <div class="premium-card" style="text-align: center; padding: 1rem;">
-            <span style="font-size: 1.8rem; font-weight: 700; color: #3B82F6; display:block;">{len(all_events)}</span>
-            <span style="font-size: 0.8rem; color: #94A3B8; font-weight: 500;">Events Registered</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        stats_cols[1].markdown(f"""
-        <div class="premium-card" style="text-align: center; padding: 1rem;">
-            <span style="font-size: 1.8rem; font-weight: 700; color: #A855F7; display:block;">{len(my_resources)}</span>
-            <span style="font-size: 0.8rem; color: #94A3B8; font-weight: 500;">Resources Shared</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        stats_cols[2].markdown(f"""
-        <div class="premium-card" style="text-align: center; padding: 1rem;">
-            <span style="font-size: 1.8rem; font-weight: 700; color: #22C55E; display:block;">{len(completed_jobs)}</span>
-            <span style="font-size: 0.8rem; color: #94A3B8; font-weight: 500;">Deliveries Made</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        stats_cols[3].markdown(f"""
-        <div class="premium-card" style="text-align: center; padding: 1rem;">
-            <span style="font-size: 1.8rem; font-weight: 700; color: #F59E0B; display:block;">{len(requested_jobs)}</span>
-            <span style="font-size: 0.8rem; color: #94A3B8; font-weight: 500;">Requests Posted</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Role Switcher section for demo presentation
-        st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin: 2rem 0;'>", unsafe_allow_html=True)
-        st.markdown("<h4 style='color: #FFFFFF; margin-top: 0; margin-bottom: 0.5rem;'><i data-lucide='settings' style='width: 16px; color:#3B82F6; display:inline-block;'></i> Demo Role Switcher</h4>", unsafe_allow_html=True)
-        st.markdown("<p style='font-size: 0.85rem; color:#94A3B8;'>Demonstrate how the application navigation changes dynamically based on student roles. Choose a role to immediately update authorization settings:</p>", unsafe_allow_html=True)
-        
-        roles = ["student", "club_admin", "admin"]
-        selected_role_idx = roles.index(user["role"]) if user["role"] in roles else 0
-        new_role = st.selectbox("Current Authorization Role (Test Switcher)", roles, index=selected_role_idx)
-        
-        if new_role != user["role"]:
-            # Update user role in database
-            if database.USE_SUPABASE:
-                try:
-                    database.supabase_client.table("users").update({"role": new_role}).eq("id", user_id).execute()
-                except Exception as e:
-                    st.error(f"Supabase update error: {e}")
-            else:
-                for u in database.mock_db.data["users"]:
-                    if u["id"] == user_id:
-                        u["role"] = new_role
-                        break
-                database.mock_db.save()
-                
-            st.success(f"Role changed to {new_role}! Reloading...")
-            ui_components.safe_rerun()
-            
-    # --- Tab 2: Notification Center ---
-    with tab_notifications:
-        notifications = services.NotificationService.get_all(user_id)
-        
-        col_ctrl1, col_ctrl2 = st.columns([7, 3])
-        with col_ctrl1:
-            st.markdown(f"<h4 style='color:#FFFFFF; margin: 0;'>Notification Logs ({len(notifications)})</h4>", unsafe_allow_html=True)
-        with col_ctrl2:
-            if notifications:
-                if st.button("Clear All Notifications", key="clear_all_notif", type="secondary", use_container_width=True):
-                    services.NotificationService.clear_all(user_id)
-                    st.success("All notifications cleared.")
-                    ui_components.safe_rerun()
-                    
-        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-        
-        if notifications:
-            for notif in notifications:
-                # Layout formatting based on read/unread
-                is_unread = not notif["read"]
-                dot_style = "display: inline-block; width: 8px; height: 8px; background-color: #3B82F6; border-radius: 50%; margin-right: 8px;" if is_unread else "display:none;"
-                bg_color = "rgba(59, 130, 246, 0.04)" if is_unread else "transparent"
-                border_color = "rgba(59, 130, 246, 0.18)" if is_unread else "rgba(255,255,255,0.03)"
-                
-                st.markdown(f"""
-                <div class="premium-card" style="padding: 1rem; margin-bottom: 0.75rem; background-color: {bg_color}; border-color: {border_color};">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div>
-                            <div style="font-weight: 600; color: #FFFFFF; font-size: 0.95rem; display: flex; align-items: center;">
-                                <span style="{dot_style}"></span>
-                                {notif['title']}
-                            </div>
-                            <div style="font-size: 0.85rem; color: #E2E8F0; margin-top: 4px; line-height: 1.4;">{notif['content']}</div>
-                            <div style="font-size: 0.72rem; color: #94A3B8; margin-top: 6px;"><i data-lucide="clock" style="width:10px; display:inline-block;"></i> Received: {notif['created_at'][:10]} at {notif['created_at'][11:16]}</div>
-                        </div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Single read mark button if unread
-                if is_unread:
-                    r_col, _ = st.columns([2, 8])
-                    with r_col:
-                        if st.button("Mark as Read", key=f"read_notif_{notif['id']}", use_container_width=True):
-                            services.NotificationService.mark_read(notif["id"])
-                            ui_components.safe_rerun()
+
+def _time_ago(ts: str) -> str:
+    """Return a human-readable relative time string from an ISO timestamp."""
+    try:
+        import datetime
+        dt = datetime.datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+        now = datetime.datetime.now(datetime.timezone.utc)
+        diff = now - dt
+        seconds = int(diff.total_seconds())
+        if seconds < 60:
+            return "just now"
+        elif seconds < 3600:
+            return f"{seconds // 60}m ago"
+        elif seconds < 86400:
+            return f"{seconds // 3600}h ago"
         else:
-            ui_components.render_empty_state(
-                title="Your inbox is clear",
-                description="Activity updates and announcements notifications will show up here.",
-                icon="bell-off"
+            return f"{diff.days}d ago"
+    except Exception:
+        return str(ts)[:10] if ts else ""
+
+
+def _txn_row(t: dict) -> None:
+    amount = t.get("amount", 0)
+    is_pos = amount > 0
+    sign = "+" if is_pos else ""
+    color = "#22C55E" if is_pos else "#EF4444"
+    bg = "rgba(34,197,94,0.04)" if is_pos else "rgba(239,68,68,0.04)"
+    border = "rgba(34,197,94,0.15)" if is_pos else "rgba(239,68,68,0.15)"
+    st.markdown(
+        f"""
+<div class="premium-card" style="padding:0.75rem 1rem;margin-bottom:0.4rem;display:flex;
+     justify-content:space-between;align-items:center;background:{bg};border-color:{border};">
+  <div>
+    <span style="font-weight:600;color:#EFF6EE;font-size:0.875rem;">{t.get('description','')}</span>
+    <div style="font-size:0.72rem;color:#9197AE;margin-top:2px;">
+      {str(t.get('created_at',''))[:10]}
+    </div>
+  </div>
+  <span style="font-size:1.05rem;font-weight:700;color:{color};">{sign}{amount} 🍅</span>
+</div>""",
+        unsafe_allow_html=True,
+    )
+
+
+def render(user: dict) -> None:
+    user_id = user["id"]
+
+    # Refresh to latest data
+    try:
+        refreshed = services.UserService.get_by_id(user_id)
+        if refreshed:
+            user = refreshed
+    except Exception:
+        pass
+
+    tomatos = user.get("tomatos", 0)
+    role = user.get("role", "student")
+    role_label = {"student": "Student", "club_admin": "Club Admin", "admin": "Admin"}.get(role, role.title())
+    avatar_url = user.get("avatar_url", "")
+    member_since = str(user.get("created_at", ""))[:10] or "—"
+
+    ui_components.page_header(
+        title="Profile",
+        subtitle="Your account overview, activity stats, and notifications.",
+        icon="user",
+    )
+
+    # ── Fetch stats data ──────────────────────────────────────────────────────
+    try:
+        user_events = services.EventService.get_user_events(user_id) or []
+    except Exception:
+        user_events = []
+
+    try:
+        saved_announcements = services.AnnouncementService.get_user_saved(user_id) or []
+    except Exception:
+        saved_announcements = []
+
+    try:
+        all_resources = services.ResourceService.get_all() or []
+        my_uploads = [r for r in all_resources if r.get("uploader_id") == user_id]
+    except Exception:
+        my_uploads = []
+
+    try:
+        bookmarked_resources = services.ResourceService.get_user_bookmarked(user_id) or []
+    except Exception:
+        bookmarked_resources = []
+
+    try:
+        all_logistics = services.ParcelService.get_all() or []
+        completed_deliveries = [
+            r for r in all_logistics
+            if r.get("helper_id") == user_id and r.get("status") == "Delivered"
+        ]
+        my_requests = [r for r in all_logistics if r.get("requester_id") == user_id]
+    except Exception:
+        completed_deliveries = []
+        my_requests = []
+
+    try:
+        notifications = services.NotificationService.get_all(user_id) or []
+    except Exception:
+        notifications = []
+
+    # ── Layout: left column (avatar/info) + right column (tabs) ──────────────
+    left_col, right_col = st.columns([1, 2])
+
+    with left_col:
+        # Avatar or initials
+        if avatar_url:
+            st.markdown(
+                f'<img src="{avatar_url}" style="width:100px;height:100px;border-radius:50%;'
+                f'border:3px solid #DD0426;object-fit:cover;display:block;margin:0 auto 1rem auto;" />',
+                unsafe_allow_html=True,
+            )
+        else:
+            initials = "".join(w[0].upper() for w in user.get("name", "?").split()[:2])
+            st.markdown(
+                f'<div style="width:100px;height:100px;border-radius:50%;background:rgba(221,4,38,0.15);'
+                f'border:3px solid #DD0426;display:flex;align-items:center;justify-content:center;'
+                f'font-size:2rem;font-weight:700;color:#DD0426;margin:0 auto 1rem auto;">{initials}</div>',
+                unsafe_allow_html=True,
             )
 
-    # Reload icons
+        st.markdown(
+            f"""
+<div style="text-align:center;">
+  <h3 style="margin:0;color:#EFF6EE;font-size:1.25rem;font-weight:700;">{user.get('name','')}</h3>
+  <div style="margin:6px 0;">
+    <span style="background:rgba(221,4,38,0.12);border:1px solid rgba(221,4,38,0.3);color:#DD0426;
+          border-radius:20px;padding:2px 12px;font-size:0.75rem;font-weight:600;">{role_label}</span>
+  </div>
+  <div style="color:#9197AE;font-size:0.82rem;margin:6px 0;">{user.get('email','')}</div>
+  <div style="color:#9197AE;font-size:0.78rem;">Member since {member_since}</div>
+  <div style="margin-top:12px;display:inline-flex;align-items:center;gap:8px;
+       background:rgba(240,45,58,0.08);border:1px solid rgba(240,45,58,0.2);
+       border-radius:10px;padding:6px 14px;">
+    <span style="font-size:1.1rem;font-weight:700;color:#EFF6EE;">{tomatos}</span>
+    <span style="font-size:0.75rem;color:#9197AE;font-weight:500;">🍅 Tomato Credits</span>
+  </div>
+</div>""",
+            unsafe_allow_html=True,
+        )
+
+        st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
+
+        # Edit Profile expander
+        with st.expander("Edit Profile"):
+            with st.form("edit_profile_form"):
+                new_name = st.text_input("Display Name", value=user.get("name", ""))
+                new_bio = st.text_area("Bio", value=user.get("bio", ""), placeholder="Tell campus a bit about yourself…")
+                if st.form_submit_button("Save Changes", type="primary"):
+                    try:
+                        from database import get_client
+                        get_client().table("users").update({"name": new_name, "bio": new_bio}).eq("id", user_id).execute()
+                        st.success("Profile updated!")
+                        # Refresh session state
+                        if "user" in st.session_state:
+                            st.session_state["user"]["name"] = new_name
+                        ui_components.safe_rerun()
+                    except Exception as e:
+                        st.error(f"Could not save: {e}")
+
+    with right_col:
+        tab_stats, tab_notifs, tab_tomatoes = st.tabs([
+            "Activity Stats",
+            "Notifications",
+            "Tomato History",
+        ])
+
+        # ── Tab 1: Activity Stats ─────────────────────────────────────────────
+        with tab_stats:
+            metrics = [
+                ("Events Registered", len(user_events), "calendar", "#A855F7"),
+                ("Announcements Saved", len(saved_announcements), "megaphone", "#EAB308"),
+                ("Resources Uploaded", len(my_uploads), "upload", "#3B82F6"),
+                ("Resources Bookmarked", len(bookmarked_resources), "bookmark", "#6366F1"),
+                ("Deliveries Completed", len(completed_deliveries), "package-check", "#22C55E"),
+                ("Requests Made", len(my_requests), "file-text", "#FB923C"),
+            ]
+
+            row1 = st.columns(3)
+            row2 = st.columns(3)
+            for i, (label, val, icon, color) in enumerate(metrics):
+                target_col = (row1 if i < 3 else row2)[i % 3]
+                target_col.markdown(
+                    f"""
+<div class="premium-card" style="text-align:center;padding:1.25rem 0.75rem;">
+  <div style="color:{color};margin-bottom:6px;">
+    <i data-lucide="{icon}" style="width:22px;height:22px;"></i>
+  </div>
+  <div style="font-size:1.75rem;font-weight:700;color:#EFF6EE;line-height:1;">{val}</div>
+  <div style="font-size:0.75rem;color:#9197AE;margin-top:4px;font-weight:500;">{label}</div>
+</div>""",
+                    unsafe_allow_html=True,
+                )
+
+        # ── Tab 2: Notifications ──────────────────────────────────────────────
+        with tab_notifs:
+            ctrl1, ctrl2, ctrl3 = st.columns([5, 2, 2])
+            unread_count = len([n for n in notifications if not n.get("is_read")])
+            with ctrl1:
+                st.markdown(
+                    f"<h4 style='color:#EFF6EE;margin:0;'>"
+                    f"Notifications <span style='color:#9197AE;font-size:0.875rem;font-weight:400;'>"
+                    f"({unread_count} unread)</span></h4>",
+                    unsafe_allow_html=True,
+                )
+            with ctrl2:
+                if notifications and st.button("Mark All Read", key="notif_mark_all", use_container_width=True):
+                    for n in notifications:
+                        if not n.get("is_read"):
+                            try:
+                                services.NotificationService.mark_read(n["id"])
+                            except Exception:
+                                pass
+                    st.success("All marked as read.")
+                    ui_components.safe_rerun()
+            with ctrl3:
+                if notifications and st.button("Clear All", key="notif_clear_all", use_container_width=True):
+                    try:
+                        services.NotificationService.clear_all(user_id)
+                        st.success("Notifications cleared.")
+                        ui_components.safe_rerun()
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+
+            st.markdown("<div style='height:0.75rem;'></div>", unsafe_allow_html=True)
+
+            if notifications:
+                for notif in notifications:
+                    is_unread = not notif.get("read", False)
+                    bg = "rgba(221,4,38,0.04)" if is_unread else "transparent"
+                    border = "rgba(221,4,38,0.15)" if is_unread else "rgba(145,151,174,0.08)"
+                    dot = (
+                        '<span style="display:inline-block;width:7px;height:7px;background:#DD0426;'
+                        'border-radius:50%;margin-right:6px;vertical-align:middle;flex-shrink:0;"></span>'
+                        if is_unread
+                        else ""
+                    )
+                    content_preview = str(notif.get("content", ""))[:120]
+                    if len(str(notif.get("content", ""))) > 120:
+                        content_preview += "…"
+
+                    notif_type = notif.get("type", "info")
+                    type_colors = {
+                        "info": "#3B82F6",
+                        "success": "#22C55E",
+                        "warning": "#EAB308",
+                        "error": "#EF4444",
+                        "delivery": "#FB923C",
+                    }
+                    badge_color = type_colors.get(notif_type, "#9197AE")
+
+                    st.markdown(
+                        f"""
+<div class="premium-card" style="padding:0.875rem 1rem;margin-bottom:0.5rem;
+     background:{bg};border-color:{border};">
+  <div style="display:flex;align-items:flex-start;gap:0.5rem;">
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:600;color:#EFF6EE;font-size:0.875rem;display:flex;align-items:center;">
+        {dot}{notif.get('title','')}
+      </div>
+      <div style="font-size:0.8125rem;color:#9197AE;margin-top:3px;line-height:1.4;">{content_preview}</div>
+      <div style="font-size:0.72rem;color:rgba(145,151,174,0.6);margin-top:5px;">
+        {_time_ago(notif.get('created_at',''))}
+      </div>
+    </div>
+  </div>
+</div>""",
+                        unsafe_allow_html=True,
+                    )
+
+                    if is_unread:
+                        mark_col, _ = st.columns([2, 8])
+                        with mark_col:
+                            if st.button("Mark Read", key=f"notif_read_{notif['id']}", use_container_width=True):
+                                try:
+                                    services.NotificationService.mark_read(notif["id"])
+                                    ui_components.safe_rerun()
+                                except Exception as e:
+                                    st.error(f"Error: {e}")
+            else:
+                ui_components.render_empty_state(
+                    "No notifications",
+                    "Activity alerts and updates will appear here.",
+                    icon="bell-off",
+                )
+
+        # ── Tab 3: Tomato History ─────────────────────────────────────────────
+        with tab_tomatoes:
+            try:
+                transactions = services.TomatoService.get_transactions(user_id) or []
+            except Exception:
+                transactions = []
+
+            if transactions:
+                st.markdown(
+                    f"<p style='color:#9197AE;font-size:0.875rem;margin-bottom:1rem;'>"
+                    f"Current balance: <strong style='color:#EFF6EE;'>{tomatos} 🍅</strong></p>",
+                    unsafe_allow_html=True,
+                )
+                for t in transactions:
+                    _txn_row(t)
+            else:
+                ui_components.render_empty_state(
+                    "No transactions",
+                    "Tomato Credit transactions from deliveries and requests will appear here.",
+                    icon="wallet",
+                )
+
     st.markdown(ui_components.LUCIDE_CDN, unsafe_allow_html=True)

@@ -1,269 +1,222 @@
 import streamlit as st
 import datetime
 import os
+import uuid
 import services
 import ui_components
 
-# Ensure local uploads directory exists
-UPLOAD_DIR = r"c:\Users\notgu\OneDrive\Documents\campus\uploads"
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-def render(user: dict):
-    """
-    Renders the Resource Hub.
-    """
+CAT_ICONS = {
+    "Notes": "book-open",
+    "PYQs": "help-circle",
+    "PPTs": "presentation",
+    "PDFs": "file",
+    "Study guides": "compass",
+}
+
+
+def _resource_card(col, res: dict, tab_prefix: str, user_id: str) -> None:
+    icon = CAT_ICONS.get(res.get("category", ""), "file")
+    col.markdown(
+        f"""
+<div class="premium-card">
+  <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;">
+    <div style="background:rgba(59,130,246,0.1);border-radius:8px;width:38px;height:38px;
+                display:flex;align-items:center;justify-content:center;color:#3B82F6;flex-shrink:0;">
+      <i data-lucide="{icon}" style="width:18px;height:18px;"></i>
+    </div>
+    <div style="overflow:hidden;">
+      <h4 style="margin:0;color:#EFF6EE;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        {res['title']}
+      </h4>
+      <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">
+        <span class="category-tag">{res.get('course_code','')}</span>
+        <span class="category-tag">{res.get('category','')}</span>
+      </div>
+    </div>
+  </div>
+  <div class="info-row" style="justify-content:space-between;font-size:0.8rem;">
+    <span>by <strong>{res.get('uploader_name','')}</strong></span>
+    <span>{str(res.get('created_at',''))[:10]}</span>
+  </div>
+  <div style="font-size:0.78rem;color:#9197AE;margin-top:6px;">
+    <i data-lucide="bookmark" style="width:12px;display:inline-block;vertical-align:middle;"></i>
+    {res.get('bookmark_count', 0)} bookmarks
+  </div>
+</div>""",
+        unsafe_allow_html=True,
+    )
+
+    try:
+        is_bookmarked = services.ResourceService.is_bookmarked(user_id, res["id"])
+    except Exception:
+        is_bookmarked = False
+
+    act1, act2 = col.columns(2)
+    with act1:
+        if is_bookmarked:
+            if st.button("Remove Bookmark", key=f"{tab_prefix}_unbm_{res['id']}", use_container_width=True):
+                try:
+                    services.ResourceService.unbookmark(user_id, res["id"])
+                    st.success("Bookmark removed.")
+                    ui_components.safe_rerun()
+                except Exception as e:
+                    st.error(f"Error: {e}")
+        else:
+            if st.button("Bookmark", key=f"{tab_prefix}_bm_{res['id']}", use_container_width=True):
+                try:
+                    services.ResourceService.bookmark(user_id, res["id"])
+                    st.success("Bookmarked!")
+                    ui_components.safe_rerun()
+                except Exception as e:
+                    st.error(f"Error: {e}")
+
+    with act2:
+        file_url = res.get("file_url", "")
+        if file_url and file_url.startswith("http"):
+            st.link_button("Download", url=file_url, use_container_width=True)
+        elif file_url and os.path.exists(file_url):
+            try:
+                with open(file_url, "rb") as f:
+                    file_bytes = f.read()
+                st.download_button(
+                    label="Download",
+                    data=file_bytes,
+                    file_name=os.path.basename(file_url),
+                    key=f"{tab_prefix}_dl_{res['id']}",
+                    use_container_width=True,
+                )
+            except Exception:
+                st.button("Unavailable", key=f"{tab_prefix}_dlerr_{res['id']}", disabled=True, use_container_width=True)
+        else:
+            st.button("Unavailable", key=f"{tab_prefix}_na_{res['id']}", disabled=True, use_container_width=True)
+
+
+def render(user: dict) -> None:
     ui_components.page_header(
         title="Resource Hub",
-        subtitle="Share and download lecture notes, past exam papers, slides, and study guides.",
-        icon="folder-open"
+        subtitle="Share and discover lecture notes, past papers, slides, and study guides.",
+        icon="folder-open",
     )
-    
+
     user_id = user["id"]
-    
-    tab_explore, tab_bookmarks, tab_upload = st.tabs([
-        "Explore Resources",
-        "Bookmarked Resources",
-        "Share a Resource"
+
+    tab_browse, tab_bookmarks, tab_upload = st.tabs([
+        "Browse Resources",
+        "My Bookmarks",
+        "Upload Resource",
     ])
-    
-    resources = services.ResourceService.get_all()
-    
-    # --- Tab 1: Explore Resources ---
-    with tab_explore:
+
+    # Fetch once, reuse across tabs
+    try:
+        all_resources = services.ResourceService.get_all() or []
+    except Exception:
+        all_resources = []
+
+    # ── Tab 1: Browse Resources ──────────────────────────────────────────────
+    with tab_browse:
         col_search, col_course, col_cat = st.columns([4, 3, 3])
         with col_search:
-            search_query = st.text_input("Search resources...", placeholder="Search by title or course name", key="res_search")
+            search_q = st.text_input(
+                "Search", placeholder="Search by title or course…", key="res_search", label_visibility="collapsed"
+            )
         with col_course:
-            course_codes = ["All Courses"] + sorted(list(set([r["course_code"] for r in resources])))
-            course_filter = st.selectbox("Course Code", course_codes)
+            course_codes = ["All Courses"] + sorted({r.get("course_code", "") for r in all_resources if r.get("course_code")})
+            course_filter = st.selectbox("Course Code", course_codes, key="res_course")
         with col_cat:
-            cat_filter = st.selectbox("Resource Type", ["All Types", "Notes", "PYQs", "PPTs", "PDFs", "Study guides"])
-            
-        # Apply filters
-        filtered_res = resources
-        if search_query:
-            filtered_res = [
-                r for r in filtered_res 
-                if search_query.lower() in r["title"].lower() 
-                or search_query.lower() in r["course_name"].lower()
-            ]
-        if course_filter != "All Courses":
-            filtered_res = [r for r in filtered_res if r["course_code"] == course_filter]
-        if cat_filter != "All Types":
-            filtered_res = [r for r in filtered_res if r["category"] == cat_filter]
-            
-        if filtered_res:
-            res_cols = st.columns(2)
-            for idx, res in enumerate(filtered_res):
-                col = res_cols[idx % 2]
-                with col:
-                    is_bookmarked = services.ResourceService.is_bookmarked(user_id, res["id"])
-                    
-                    # Icons mapping
-                    cat_icons = {
-                        "Notes": "book-open",
-                        "PYQs": "help-circle",
-                        "PPTs": "presentation",
-                        "PDFs": "file",
-                        "Study guides": "compass"
-                    }
-                    icon = cat_icons.get(res["category"], "file")
-                    
-                    col.markdown(f"""
-                    <div class="premium-card">
-                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <div style="background-color: rgba(59, 130, 246, 0.1); border-radius: 6px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #3B82F6;">
-                                    <i data-lucide="{icon}" style="width: 18px; height: 18px;"></i>
-                                </div>
-                                <div>
-                                    <h4 style="margin: 0; color: #FFFFFF; font-size: 1.05rem;">{res['title']}</h4>
-                                    <span style="font-size: 0.8rem; color: #94A3B8;">{res['course_code']} • {res['course_name']}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="info-row" style="margin-top: 10px; margin-bottom: 12px; justify-content: space-between; font-size: 0.8rem;">
-                            <span>Uploaded by: <strong>{res['uploader_name']}</strong></span>
-                            <span>{res['created_at'][:10]}</span>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: #94A3B8;">
-                            <span><i data-lucide="bookmark" style="width:12px; display:inline-block;"></i> {res['bookmarks_count']} Bookmarks</span>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Interactivity Actions row
-                    act_col1, act_col2 = col.columns(2)
-                    with act_col1:
-                        # Bookmark toggle
-                        if is_bookmarked:
-                            if st.button("Remove Bookmark", key=f"unbm_{res['id']}", use_container_width=True):
-                                services.ResourceService.unbookmark(user_id, res["id"])
-                                st.success("Removed bookmark.")
-                                ui_components.safe_rerun()
-                        else:
-                            if st.button("Bookmark Resource", key=f"bm_{res['id']}", use_container_width=True):
-                                services.ResourceService.bookmark(user_id, res["id"])
-                                st.success("Bookmarked resource!")
-                                ui_components.safe_rerun()
-                                
-                    with act_col2:
-                        # Resolve physical path vs URL download
-                        file_path = res["file_url"]
-                        file_name = res["title"] + (".pdf" if res["category"] == "PDFs" else ".zip")
-                        
-                        if os.path.exists(file_path):
-                            try:
-                                with open(file_path, "rb") as f:
-                                    file_bytes = f.read()
-                                st.download_button(
-                                    label="Download Resource",
-                                    data=file_bytes,
-                                    file_name=os.path.basename(file_path),
-                                    key=f"dl_{res['id']}",
-                                    use_container_width=True
-                                )
-                            except Exception as e:
-                                st.button("Download Failed", key=f"dl_err_{res['id']}", disabled=True, use_container_width=True)
-                        else:
-                            # If mock URL, download dummy template PDF
-                            dummy_pdf = b"%PDF-1.4 ... Dummy PDF for CampusConnect demonstration ..."
-                            st.download_button(
-                                label="Download (Mock)",
-                                data=dummy_pdf,
-                                file_name=f"{res['title'].replace(' ', '_')}.pdf",
-                                mime="application/pdf",
-                                key=f"dl_mock_{res['id']}",
-                                use_container_width=True
-                            )
-        else:
-            ui_components.render_empty_state(
-                title="No resources found",
-                description="Try filtering by another course or sharing your own documents.",
-                icon="folder-open"
+            cat_filter = st.selectbox(
+                "Category", ["All Types", "Notes", "PYQs", "PPTs", "PDFs", "Study guides"], key="res_cat"
             )
-            
-    # --- Tab 2: Bookmarked Resources ---
-    with tab_bookmarks:
-        bookmarked_res = services.ResourceService.get_user_bookmarked(user_id)
-        if bookmarked_res:
-            res_cols = st.columns(2)
-            for idx, res in enumerate(bookmarked_res):
-                col = res_cols[idx % 2]
-                with col:
-                    cat_icons = {
-                        "Notes": "book-open",
-                        "PYQs": "help-circle",
-                        "PPTs": "presentation",
-                        "PDFs": "file",
-                        "Study guides": "compass"
-                    }
-                    icon = cat_icons.get(res["category"], "file")
-                    
-                    col.markdown(f"""
-                    <div class="premium-card">
-                        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
-                            <div style="background-color: rgba(168, 85, 247, 0.1); border-radius: 6px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #A855F7;">
-                                <i data-lucide="{icon}" style="width: 18px; height: 18px;"></i>
-                            </div>
-                            <div>
-                                <h4 style="margin: 0; color: #FFFFFF; font-size: 1.05rem;">{res['title']}</h4>
-                                <span style="font-size: 0.8rem; color: #94A3B8;">{res['course_code']} • {res['course_name']}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="info-row" style="margin-top: 10px; margin-bottom: 12px; justify-content: space-between; font-size: 0.8rem;">
-                            <span>Uploaded by: <strong>{res['uploader_name']}</strong></span>
-                            <span>{res['created_at'][:10]}</span>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    act_col1, act_col2 = col.columns(2)
-                    with act_col1:
-                        if st.button("Remove Bookmark", key=f"unbm_tab_{res['id']}", use_container_width=True):
-                            services.ResourceService.unbookmark(user_id, res["id"])
-                            st.success("Bookmark removed.")
-                            ui_components.safe_rerun()
-                    with act_col2:
-                        file_path = res["file_url"]
-                        if os.path.exists(file_path):
-                            try:
-                                with open(file_path, "rb") as f:
-                                    file_bytes = f.read()
-                                st.download_button(
-                                    label="Download Resource",
-                                    data=file_bytes,
-                                    file_name=os.path.basename(file_path),
-                                    key=f"dl_tab_{res['id']}",
-                                    use_container_width=True
-                                )
-                            except Exception:
-                                st.button("Download Error", key=f"dl_err_tab_{res['id']}", disabled=True, use_container_width=True)
-                        else:
-                            dummy_pdf = b"%PDF-1.4 ... Dummy PDF for CampusConnect demonstration ..."
-                            st.download_button(
-                                label="Download (Mock)",
-                                data=dummy_pdf,
-                                file_name=f"{res['title'].replace(' ', '_')}.pdf",
-                                mime="application/pdf",
-                                key=f"dl_mock_tab_{res['id']}",
-                                use_container_width=True
-                            )
-        else:
-            ui_components.render_empty_state(
-                title="No bookmarked resources",
-                description="Bookmarked lecture slides, question papers, and study guides will appear here.",
-                icon="bookmark"
-            )
-            
-    # --- Tab 3: Upload Resource ---
-    with tab_upload:
-        st.markdown("<h3 style='margin-top: 0; color: #FFFFFF; font-size: 1.2rem;'>Share Academic Material</h3>", unsafe_allow_html=True)
-        
-        with st.form("upload_resource_form", clear_on_submit=True):
-            res_title = st.text_input("Material Title *", placeholder="e.g. DSA Lecture notes 1 to 10")
-            
-            col_code, col_name = st.columns(2)
-            with col_code:
-                res_code = st.text_input("Course Code *", placeholder="e.g. CS-201")
-            with col_name:
-                res_name = st.text_input("Course Name *", placeholder="e.g. Data Structures")
-                
-            res_cat = st.selectbox("Material Category *", ["Notes", "PYQs", "PPTs", "PDFs", "Study guides"])
-            
-            uploaded_file = st.file_uploader("Upload File (PDF, PPT, ZIP, DOC) *", type=["pdf", "ppt", "pptx", "zip", "doc", "docx"])
-            
-            submit_btn = st.form_submit_button("Upload and Share", type="primary")
-            
-            if submit_btn:
-                if not res_title or not res_code or not res_name or not uploaded_file:
-                    st.error("Please fill in all mandatory fields (*) and upload a file.")
-                else:
-                    # Save file locally in our uploads directory
-                    safe_filename = f"{uuid.uuid4().hex[:6]}_{uploaded_file.name}"
-                    local_path = os.path.join(UPLOAD_DIR, safe_filename)
-                    
-                    try:
-                        with open(local_path, "wb") as f:
-                            f.write(uploaded_file.getbuffer())
-                            
-                        # Save resource metadata into DB
-                        services.ResourceService.upload(
-                            title=res_title,
-                            course_code=res_code,
-                            course_name=res_name,
-                            category=res_cat,
-                            file_url=local_path,
-                            uploader_id=user_id,
-                            uploader_name=user["name"]
-                        )
-                        st.success(f"Resource '{res_title}' successfully shared with the campus!")
-                        ui_components.safe_rerun()
-                    except Exception as e:
-                        st.error(f"Failed to upload file: {e}")
 
-    # Reload icons
+        filtered = all_resources
+        if search_q:
+            q = search_q.lower()
+            filtered = [r for r in filtered if q in r.get("title", "").lower() or q in r.get("course_name", "").lower()]
+        if course_filter != "All Courses":
+            filtered = [r for r in filtered if r.get("course_code") == course_filter]
+        if cat_filter != "All Types":
+            filtered = [r for r in filtered if r.get("category") == cat_filter]
+
+        if filtered:
+            cols = st.columns(2)
+            for idx, res in enumerate(filtered):
+                _resource_card(cols[idx % 2], res, "browse", user_id)
+        else:
+            ui_components.render_empty_state(
+                "No resources found",
+                "Try adjusting your filters or be the first to share a resource.",
+                icon="folder-open",
+            )
+
+    # ── Tab 2: My Bookmarks ──────────────────────────────────────────────────
+    with tab_bookmarks:
+        try:
+            bookmarked = services.ResourceService.get_user_bookmarked(user_id) or []
+        except Exception:
+            bookmarked = []
+
+        if bookmarked:
+            cols = st.columns(2)
+            for idx, res in enumerate(bookmarked):
+                _resource_card(cols[idx % 2], res, "bm", user_id)
+        else:
+            ui_components.render_empty_state(
+                "No bookmarked resources",
+                "Resources you bookmark will appear here for quick access.",
+                icon="bookmark",
+            )
+
+    # ── Tab 3: Upload Resource ───────────────────────────────────────────────
+    with tab_upload:
+        st.markdown(
+            "<h3 style='margin-top:0;color:#EFF6EE;font-size:1.15rem;'>Share Academic Material</h3>",
+            unsafe_allow_html=True,
+        )
+
+        with st.form("upload_resource_form", clear_on_submit=True):
+            res_title = st.text_input("Material Title *", placeholder="e.g. DSA Lecture Notes Week 1-10")
+
+            c1, c2 = st.columns(2)
+            with c1:
+                res_code = st.text_input("Course Code *", placeholder="e.g. CS-201")
+            with c2:
+                res_name = st.text_input("Course Name *", placeholder="e.g. Data Structures")
+
+            res_cat = st.selectbox("Category *", ["Notes", "PYQs", "PPTs", "PDFs", "Study guides"])
+            uploaded_file = st.file_uploader(
+                "Upload file", type=["pdf", "pptx", "ppt", "docx", "doc"]
+            )
+
+            submitted = st.form_submit_button("Upload & Share", type="primary")
+
+            if submitted:
+                if not res_title or not res_code or not res_name or uploaded_file is None:
+                    st.error("Please fill all required fields (*) and select a file.")
+                else:
+                    size_mb = len(uploaded_file.getbuffer()) / (1024 * 1024)
+                    if size_mb > 25:
+                        st.error(f"File is {size_mb:.1f} MB — maximum allowed size is 25 MB.")
+                    else:
+                        safe_name = f"{uuid.uuid4().hex[:8]}_{uploaded_file.name}"
+                        local_path = os.path.join(UPLOAD_DIR, safe_name)
+                        try:
+                            with st.spinner("Uploading…"):
+                                with open(local_path, "wb") as f:
+                                    f.write(uploaded_file.getbuffer())
+                                services.ResourceService.upload(
+                                    title=res_title,
+                                    course_code=res_code,
+                                    course_name=res_name,
+                                    category=res_cat,
+                                    file_url=local_path,
+                                    uploader_id=user_id,
+                                    uploader_name=user["name"],
+                                )
+                            st.success(f"'{res_title}' shared successfully!")
+                            ui_components.safe_rerun()
+                        except Exception as e:
+                            st.error(f"Upload failed: {e}")
+
     st.markdown(ui_components.LUCIDE_CDN, unsafe_allow_html=True)

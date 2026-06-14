@@ -36,19 +36,27 @@ def render(user: dict):
         with col_priority:
             priority_filter = st.selectbox("Priority", ["All Priorities", "High", "Medium", "Low"])
             
+        # Sort by priority first (High > Medium > Low), then by date desc
+        priority_rank = {"High": 0, "Medium": 1, "Low": 2}
+        announcements_sorted = sorted(
+            announcements,
+            key=lambda a: (priority_rank.get(a.get("priority", "Low"), 2), a.get("created_at", ""))
+        )
+
         # Apply filters
-        filtered_anns = announcements
+        filtered_anns = announcements_sorted
         if search_query:
+            sq = search_query.lower()
             filtered_anns = [
-                a for a in filtered_anns 
-                if search_query.lower() in a["title"].lower() 
-                or search_query.lower() in a["content"].lower() 
-                or search_query.lower() in a["author"].lower()
+                a for a in filtered_anns
+                if sq in a.get("title", "").lower()
+                or sq in a.get("content", "").lower()
+                or sq in a.get("author_name", a.get("author", "")).lower()
             ]
         if category_filter != "All Categories":
-            filtered_anns = [a for a in filtered_anns if a["category"] == category_filter]
+            filtered_anns = [a for a in filtered_anns if a.get("category") == category_filter]
         if priority_filter != "All Priorities":
-            filtered_anns = [a for a in filtered_anns if a["priority"] == priority_filter]
+            filtered_anns = [a for a in filtered_anns if a.get("priority") == priority_filter]
             
         if filtered_anns:
             for ann in filtered_anns:
@@ -67,8 +75,8 @@ def render(user: dict):
                     </div>
                     <p style="margin: 0; color: #E2E8F0; font-size: 0.95rem; line-height: 1.5; white-space: pre-line;">{ann['content']}</p>
                     <div class="info-row" style="margin-top: 12px; border-top: 1px solid #2D3748; padding-top: 8px; justify-content: space-between;">
-                        <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="user" style="width: 12px;"></i> Broadcasted by: <strong>{ann['author']}</strong></span>
-                        <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 12px;"></i> {ann['created_at'][:10]} {ann['created_at'][11:16]}</span>
+                        <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="user" style="width: 12px;"></i> Broadcasted by: <strong>{ann.get('author_name', ann.get('author', ''))}</strong></span>
+                        <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 12px;"></i> {str(ann.get('created_at',''))[:10]} {str(ann.get('created_at',''))[11:16]}</span>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -111,8 +119,8 @@ def render(user: dict):
                     </div>
                     <p style="margin: 0; color: #E2E8F0; font-size: 0.95rem; line-height: 1.5;">{ann['content']}</p>
                     <div class="info-row" style="margin-top: 12px; border-top: 1px solid #2D3748; padding-top: 8px; justify-content: space-between;">
-                        <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="user" style="width: 12px;"></i> By {ann['author']}</span>
-                        <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 12px;"></i> {ann['created_at'][:10]}</span>
+                        <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="user" style="width: 12px;"></i> By {ann.get('author_name', ann.get('author', ''))}</span>
+                        <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 12px;"></i> {str(ann.get('created_at',''))[:10]}</span>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -166,7 +174,8 @@ def render(user: dict):
                             content=ann_content,
                             category=ann_category,
                             priority=ann_priority,
-                            author=ann_author
+                            author=ann_author,
+                            author_id=user_id,
                         )
                         st.success(f"Announcement '{ann_title}' successfully published and broadcasted!")
                         ui_components.safe_rerun()

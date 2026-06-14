@@ -512,7 +512,7 @@ def render_timeline(status: str):
     """
     Renders a premium horizontal timeline tracking parcel logistics progress.
     """
-    steps = ["Request Created", "Matched", "Picked Up", "Delivered"]
+    steps = ["Created", "Accepted", "Picked Up", "Delivered"]
     try:
         current_idx = steps.index(status)
     except ValueError:

@@ -1,6 +1,6 @@
 import streamlit as st
 import datetime
-import database
+import services
 import ui_components
 
 def render(user: dict):
@@ -23,7 +23,7 @@ def render(user: dict):
         
     tabs = st.tabs(tab_titles)
     
-    announcements = database.get_announcements()
+    announcements = services.AnnouncementService.get_all()
     
     # --- Tab 1: Notice Board (Feed) ---
     with tabs[0]:
@@ -53,7 +53,7 @@ def render(user: dict):
         if filtered_anns:
             for ann in filtered_anns:
                 priority_class = f"priority-{ann['priority'].lower()}"
-                is_saved = database.is_announcement_saved(user_id, ann["id"])
+                is_saved = services.AnnouncementService.is_saved(user_id, ann["id"])
                 
                 # HTML notice card
                 st.markdown(f"""
@@ -78,12 +78,12 @@ def render(user: dict):
                 with btn_col:
                     if is_saved:
                         if st.button("Unsave Notice", key=f"unsave_{ann['id']}", use_container_width=True):
-                            database.unsave_announcement(user_id, ann["id"])
+                            services.AnnouncementService.unsave(user_id, ann["id"])
                             st.success("Removed from Saved Notices!")
                             ui_components.safe_rerun()
                     else:
                         if st.button("Save Notice", key=f"save_{ann['id']}", use_container_width=True):
-                            database.save_announcement(user_id, ann["id"])
+                            services.AnnouncementService.save(user_id, ann["id"])
                             st.success("Saved notice!")
                             ui_components.safe_rerun()
         else:
@@ -95,7 +95,7 @@ def render(user: dict):
             
     # --- Tab 2: Saved Notices ---
     with tabs[1]:
-        saved_notices = database.get_saved_announcements(user_id)
+        saved_notices = services.AnnouncementService.get_user_saved(user_id)
         if saved_notices:
             for ann in saved_notices:
                 priority_class = f"priority-{ann['priority'].lower()}"
@@ -120,7 +120,7 @@ def render(user: dict):
                 btn_col, _ = st.columns([2, 8])
                 with btn_col:
                     if st.button("Unsave Notice", key=f"unsave_tab_{ann['id']}", use_container_width=True):
-                        database.unsave_announcement(user_id, ann["id"])
+                        services.AnnouncementService.unsave(user_id, ann["id"])
                         st.success("Notice unsaved.")
                         ui_components.safe_rerun()
         else:
@@ -161,7 +161,7 @@ def render(user: dict):
                     if not ann_title or not ann_content:
                         st.error("Please provide both a Title and Notice Content.")
                     else:
-                        database.create_announcement(
+                        services.AnnouncementService.create(
                             title=ann_title,
                             content=ann_content,
                             category=ann_category,

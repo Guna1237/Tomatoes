@@ -1,34 +1,34 @@
 import streamlit as st
 import datetime
-import database
+import services
 import ui_components
 
 def render(user: dict):
     """
     Renders the Peer Logistics page.
     """
-    # Header showing credits balance immediately
+    # Header showing tomatos balance immediately
     user_id = user["id"]
     
-    # Reload user info to keep credits up to date
-    refreshed_user = database.get_user_by_id(user_id)
+    # Reload user info to keep tomatos up to date
+    refreshed_user = services.UserService.get_by_id(user_id)
     if refreshed_user:
         user = refreshed_user
         
-    credits = user["credits"]
+    tomatos = user["tomatos"]
     
     ui_components.page_header(
         title="Peer Logistics",
-        subtitle=f"Earn and spend credits by helping peers deliver parcels, books, or notes across campus.",
+        subtitle=f"Earn and spend tomatos by helping peers deliver parcels, books, or notes across campus.",
         icon="truck"
     )
     
-    # Display credits balance banner
+    # Display tomatos balance banner
     st.markdown(f"""
     <div class="premium-card" style="border-left: 4px solid #3B82F6; padding: 1rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <div>
-            <h4 style="margin: 0; color: #FFFFFF;">Credits Balance: <strong>{credits} Credits</strong></h4>
-            <span style="font-size: 0.82rem; color: #94A3B8;">Creating requests costs <strong>5 credits</strong>. Completing deliveries earns <strong>5 credits</strong>.</span>
+            <h4 style="margin: 0; color: #FFFFFF;">Tomatos Balance: <strong>{tomatos} Tomatos</strong></h4>
+            <span style="font-size: 0.82rem; color: #94A3B8;">Creating requests costs <strong>5 tomatos</strong>. Completing deliveries earns <strong>5 tomatos</strong>.</span>
         </div>
         <div style="background-color: rgba(59, 130, 246, 0.15); border-radius: 6px; padding: 6px 12px; font-weight: 600; color: #60A5FA; font-size: 0.9rem;">
             No Money Involved
@@ -41,15 +41,15 @@ def render(user: dict):
         "My Jobs (Helper)",
         "My Requests (Requester)",
         "Create Request",
-        "Credit Ledger"
+        "Tomato Ledger"
     ])
     
-    all_requests = database.get_logistics_requests()
+    all_requests = services.ParcelService.get_all()
     
     # --- Tab 1: Open Delivery Jobs ---
     with tab_open:
-        # Filter requests where status is 'Requested' and requester is NOT current user
-        open_jobs = [r for r in all_requests if r["status"] == "Requested" and r["requester_id"] != user_id]
+        # Filter requests where status is 'Request Created' and requester is NOT current user
+        open_jobs = [r for r in all_requests if r["status"] == "Request Created" and r["requester_id"] != user_id]
         
         if open_jobs:
             for job in open_jobs:
@@ -57,7 +57,7 @@ def render(user: dict):
                 <div class="premium-card">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
                         <h4 style="margin: 0; color: #FFFFFF; font-size: 1.1rem;">{job['title']}</h4>
-                        <span class="priority-badge priority-medium" style="background-color: rgba(34, 197, 94, 0.15); color: #22C55E; border-color: rgba(34, 197, 94, 0.3);">+{job['credits_offered']} Credits Bounty</span>
+                        <span class="priority-badge priority-medium" style="background-color: rgba(34, 197, 94, 0.15); color: #22C55E; border-color: rgba(34, 197, 94, 0.3);">+{job['tomatos_offered']} Tomatos Bounty</span>
                     </div>
                     <p style="margin: 0; color: #E2E8F0; font-size: 0.9rem; line-height: 1.4;">{job['description']}</p>
                     
@@ -83,7 +83,7 @@ def render(user: dict):
                 btn_col, _ = st.columns([3, 7])
                 with btn_col:
                     if st.button("Accept Delivery Job", key=f"accept_job_{job['id']}", type="primary", use_container_width=True):
-                        success = database.accept_logistics_request(job["id"], user_id, user["name"])
+                        success = services.ParcelService.accept_request(job["id"], user_id, user["name"])
                         if success:
                             st.success("You have accepted the job! Go to 'My Jobs' to update progress.")
                             ui_components.safe_rerun()
@@ -124,18 +124,18 @@ def render(user: dict):
                 status = job["status"]
                 btn_col1, btn_col2 = st.columns([3, 7])
                 with btn_col1:
-                    if status == "Accepted":
+                    if status == "Matched":
                         if st.button("Collect Parcel (Picked Up)", key=f"job_pickup_{job['id']}", type="primary", use_container_width=True):
-                            database.update_logistics_status(job["id"], "Picked Up")
+                            services.ParcelService.update_status(job["id"], "Picked Up")
                             st.success("Collected! Status updated to 'Picked Up'.")
                             ui_components.safe_rerun()
                     elif status == "Picked Up":
                         if st.button("Complete Delivery", key=f"job_deliver_{job['id']}", type="primary", use_container_width=True):
-                            database.update_logistics_status(job["id"], "Delivered")
-                            st.success("Delivery completed successfully! +5 credits received.")
+                            services.ParcelService.update_status(job["id"], "Delivered")
+                            st.success("Delivery completed successfully! +5 tomatos received.")
                             ui_components.safe_rerun()
                     elif status == "Delivered":
-                        st.markdown("<span style='color: #22C55E; font-size: 0.85rem; font-weight: 600;'><i data-lucide='check-circle' style='width:12px; display:inline-block;'></i> Completed & Credits Received (+5)</span>", unsafe_allow_html=True)
+                        st.markdown("<span style='color: #22C55E; font-size: 0.85rem; font-weight: 600;'><i data-lucide='check-circle' style='width:12px; display:inline-block;'></i> Completed & Tomatos Received (+5)</span>", unsafe_allow_html=True)
                 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
         else:
             ui_components.render_empty_state(
@@ -181,8 +181,8 @@ def render(user: dict):
     with tab_create:
         st.markdown("<h3 style='margin-top: 0; color: #FFFFFF; font-size: 1.2rem;'>Create Package Delivery Request</h3>", unsafe_allow_html=True)
         
-        if credits < 5:
-            st.error("Insufficient credit balance. You need at least 5 credits to request a delivery. Earn credits by helping peers with their packages.")
+        if tomatos < 5:
+            st.error("Insufficient tomato balance. You need at least 5 tomatos to request a delivery. Earn tomatos by helping peers with their packages.")
         else:
             with st.form("create_logistics_form", clear_on_submit=True):
                 req_title = st.text_input("Item/Package Title *", placeholder="e.g. Return Chemistry Lab manual")
@@ -194,7 +194,7 @@ def render(user: dict):
                 with col_d:
                     req_delivery = st.text_input("Delivery Destination *", placeholder="e.g. Library Desk or Block C Rm 102")
                     
-                st.info("Bounty holding: 5 credits will be held from your account and transferred to helper upon completion.")
+                st.info("Bounty holding: 5 tomatos will be held from your account and transferred to helper upon completion.")
                 
                 submit_btn = st.form_submit_button("Submit Request", type="primary")
                 
@@ -202,24 +202,24 @@ def render(user: dict):
                     if not req_title or not req_desc or not req_pickup or not req_delivery:
                         st.error("Please fill in all mandatory fields (*).")
                     else:
-                        res = database.create_logistics_request(
+                        res = services.ParcelService.create_request(
                             requester_id=user_id,
                             requester_name=user["name"],
                             title=req_title,
                             description=req_desc,
                             pickup_location=req_pickup,
                             delivery_location=req_delivery,
-                            credits_offered=5
+                            tomatos_offered=5
                         )
                         if res:
-                            st.success(f"Delivery request '{req_title}' created successfully! 5 credits held.")
+                            st.success(f"Delivery request '{req_title}' created successfully! 5 tomatos held.")
                             ui_components.safe_rerun()
                         else:
-                            st.error("Request creation failed. Please check your credit balance.")
+                            st.error("Request creation failed. Please check your tomato balance.")
                             
-    # --- Tab 5: Credit Ledger ---
+    # --- Tab 5: Tomato Ledger ---
     with tab_ledger:
-        transactions = database.get_credit_transactions(user_id)
+        transactions = services.TomatoService.get_transactions(user_id)
         if transactions:
             st.markdown("<h4 style='color:#FFFFFF; margin-top:0;'>Transaction History</h4>", unsafe_allow_html=True)
             for t in transactions:
@@ -242,7 +242,7 @@ def render(user: dict):
         else:
             ui_components.render_empty_state(
                 title="No transaction logs",
-                description="Logistics requests and delivery credits transfers will show up here.",
+                description="Logistics requests and delivery tomatos transfers will show up here.",
                 icon="wallet"
             )
 

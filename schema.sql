@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
-    credits INT NOT NULL DEFAULT 50,
+    tomatoes INT NOT NULL DEFAULT 50,
     avatar_url TEXT,
     role TEXT NOT NULL DEFAULT 'student', -- 'student', 'club_admin', 'admin'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -89,8 +89,8 @@ CREATE TABLE IF NOT EXISTS public.peer_logistics (
     description TEXT,
     pickup_location TEXT NOT NULL,
     delivery_location TEXT NOT NULL,
-    credits_offered INT DEFAULT 5,
-    status TEXT NOT NULL DEFAULT 'Requested', -- 'Requested', 'Accepted', 'Picked Up', 'Delivered'
+    tomatoes_offered INT DEFAULT 5,
+    status TEXT NOT NULL DEFAULT 'Request Created', -- 'Request Created', 'Matched', 'Picked Up', 'Delivered'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -110,8 +110,8 @@ CREATE TABLE IF NOT EXISTS public.lost_found (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 10. Create Credit Transactions Table
-CREATE TABLE IF NOT EXISTS public.credit_transactions (
+-- 10. Create Tomato Transactions Table
+CREATE TABLE IF NOT EXISTS public.tomato_transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
     amount INT NOT NULL,

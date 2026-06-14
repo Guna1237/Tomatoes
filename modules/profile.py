@@ -1,5 +1,5 @@
 import streamlit as st
-import database
+import services
 import ui_components
 
 def render(user: dict):
@@ -8,8 +8,8 @@ def render(user: dict):
     """
     user_id = user["id"]
     
-    # Reload user info to keep credits up to date
-    refreshed_user = database.get_user_by_id(user_id)
+    # Reload user info to keep tomatos up to date
+    refreshed_user = services.UserService.get_by_id(user_id)
     if refreshed_user:
         user = refreshed_user
         
@@ -25,11 +25,11 @@ def render(user: dict):
     ])
     
     # Get statistics
-    all_events = database.get_user_registered_events(user_id)
-    all_resources = database.get_resources()
+    all_events = services.EventService.get_user_events(user_id)
+    all_resources = services.ResourceService.get_all()
     my_resources = [r for r in all_resources if r["uploader_id"] == user_id]
     
-    all_logistics = database.get_logistics_requests()
+    all_logistics = services.ParcelService.get_all()
     completed_jobs = [r for r in all_logistics if r["helper_id"] == user_id and r["status"] == "Delivered"]
     requested_jobs = [r for r in all_logistics if r["requester_id"] == user_id]
     
@@ -50,7 +50,7 @@ def render(user: dict):
             <p style="margin: 4px 0 10px 0; color: #94A3B8; font-size: 0.95rem;">{user['email']}</p>
             <div style="display: flex; gap: 8px;">
                 <span class="priority-badge" style="background-color: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 600; text-transform: uppercase;">Role: {user['role']}</span>
-                <span class="priority-badge" style="background-color: rgba(34, 197, 94, 0.15); color: #22C55E; border: 1px solid rgba(34, 197, 94, 0.3); font-weight: 600;">{user['credits']} Credits</span>
+                <span class="priority-badge" style="background-color: rgba(34, 197, 94, 0.15); color: #22C55E; border: 1px solid rgba(34, 197, 94, 0.3); font-weight: 600;">{user['tomatos']} Tomatos</span>
             </div>
             """, unsafe_allow_html=True)
             
@@ -114,7 +114,7 @@ def render(user: dict):
             
     # --- Tab 2: Notification Center ---
     with tab_notifications:
-        notifications = database.get_notifications(user_id)
+        notifications = services.NotificationService.get_all(user_id)
         
         col_ctrl1, col_ctrl2 = st.columns([7, 3])
         with col_ctrl1:
@@ -122,7 +122,7 @@ def render(user: dict):
         with col_ctrl2:
             if notifications:
                 if st.button("Clear All Notifications", key="clear_all_notif", type="secondary", use_container_width=True):
-                    database.clear_all_notifications(user_id)
+                    services.NotificationService.clear_all(user_id)
                     st.success("All notifications cleared.")
                     ui_components.safe_rerun()
                     
@@ -156,7 +156,7 @@ def render(user: dict):
                     r_col, _ = st.columns([2, 8])
                     with r_col:
                         if st.button("Mark as Read", key=f"read_notif_{notif['id']}", use_container_width=True):
-                            database.mark_notification_as_read(notif["id"])
+                            services.NotificationService.mark_read(notif["id"])
                             ui_components.safe_rerun()
         else:
             ui_components.render_empty_state(

@@ -72,7 +72,7 @@ class CampusMockDatabase:
                     "id": "u-jane-doe",
                     "email": "jane@university.edu",
                     "name": "Jane Doe",
-                    "credits": 75,
+                    "tomatos": 75,
                     "avatar_url": "https://api.dicebear.com/7.x/adventurer/svg?seed=jane",
                     "role": "student",
                     "created_at": "2026-06-01T10:00:00Z"
@@ -81,7 +81,7 @@ class CampusMockDatabase:
                     "id": "u-john-smith",
                     "email": "john@university.edu",
                     "name": "John Smith",
-                    "credits": 45,
+                    "tomatos": 45,
                     "avatar_url": "https://api.dicebear.com/7.x/adventurer/svg?seed=john",
                     "role": "student",
                     "created_at": "2026-06-02T11:00:00Z"
@@ -90,7 +90,7 @@ class CampusMockDatabase:
                     "id": "u-club-acs",
                     "email": "acs@university.edu",
                     "name": "Association of Computer Students (ACS)",
-                    "credits": 150,
+                    "tomatos": 150,
                     "avatar_url": "https://api.dicebear.com/7.x/initials/svg?seed=ACS",
                     "role": "club_admin",
                     "created_at": "2026-05-15T09:00:00Z"
@@ -99,7 +99,7 @@ class CampusMockDatabase:
                     "id": "u-registrar",
                     "email": "registrar@university.edu",
                     "name": "Dr. Arthur (Registrar Office)",
-                    "credits": 999,
+                    "tomatos": 999,
                     "avatar_url": "https://api.dicebear.com/7.x/bottts/svg?seed=registrar",
                     "role": "admin",
                     "created_at": "2026-05-01T08:00:00Z"
@@ -272,7 +272,7 @@ class CampusMockDatabase:
                     "description": "Return 'Introduction to Python' to the library desk. Book is on the desk at Hostel Block A, Room 204. I need it done before library closes at 8 PM.",
                     "pickup_location": "Hostel Block A, Room 204",
                     "delivery_location": "Central Library Counter",
-                    "credits_offered": 5,
+                    "tomatos_offered": 5,
                     "status": "Delivered",
                     "created_at": "2026-06-12T11:00:00Z",
                     "updated_at": "2026-06-12T13:45:00Z"
@@ -287,8 +287,8 @@ class CampusMockDatabase:
                     "description": "Pick up my printed Chemistry Lab manual from the Xerox shop. It is already paid for under name John. Please drop it off in C hostel.",
                     "pickup_location": "Campus Xerox Shop",
                     "delivery_location": "Hostel Block C, Room 102",
-                    "credits_offered": 5,
-                    "status": "Requested",
+                    "tomatos_offered": 5,
+                    "status": "Request Created",
                     "created_at": "2026-06-14T09:00:00Z",
                     "updated_at": "2026-06-14T09:00:00Z"
                 },
@@ -302,8 +302,8 @@ class CampusMockDatabase:
                     "description": "Hand over the organic chemistry lecture notes binder to me. John has it in C block.",
                     "pickup_location": "Hostel Block C Lobby",
                     "delivery_location": "Hostel Block A Room 204",
-                    "credits_offered": 5,
-                    "status": "Accepted",
+                    "tomatos_offered": 5,
+                    "status": "Matched",
                     "created_at": "2026-06-14T10:00:00Z",
                     "updated_at": "2026-06-14T10:30:00Z"
                 }
@@ -336,7 +336,7 @@ class CampusMockDatabase:
                     "created_at": "2026-06-14T12:00:00Z"
                 }
             ],
-            "credit_transactions": [
+            "tomato_transactions": [
                 {"id": "ct-1", "user_id": "u-jane-doe", "amount": -5, "description": "Requested logistics 'Library Book Return'", "created_at": "2026-06-12T11:00:00Z"},
                 {"id": "ct-2", "user_id": "u-john-smith", "amount": 5, "description": "Completed logistics delivery 'Library Book Return'", "created_at": "2026-06-12T13:45:00Z"}
             ],
@@ -353,7 +353,7 @@ class CampusMockDatabase:
                     "id": "n-2",
                     "user_id": "u-john-smith",
                     "title": "Delivery Completed",
-                    "content": "Your logistics delivery for 'Library Book Return' has been marked as delivered. +5 credits earned!",
+                    "content": "Your logistics delivery for 'Library Book Return' has been marked as delivered. +5 tomatos earned!",
                     "read": True,
                     "created_at": "2026-06-12T13:45:00Z"
                 },
@@ -376,6 +376,7 @@ mock_db = CampusMockDatabase()
 # --- DATABASE INTERFACE FUNCTIONS ---
 
 def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("users").select("*").eq("email", email).execute()
@@ -399,12 +400,13 @@ def register_user(email: str, name: str, role: str = "student") -> Dict[str, Any
         "id": new_user_id,
         "email": email.lower(),
         "name": name,
-        "credits": 50,
+        "tomatos": 50,
         "avatar_url": avatar,
         "role": role,
         "created_at": created_at
     }
     
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("users").insert(user_data).execute()
@@ -427,6 +429,7 @@ def register_user(email: str, name: str, role: str = "student") -> Dict[str, Any
     return user_data
 
 def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("users").select("*").eq("id", user_id).execute()
@@ -441,10 +444,11 @@ def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
             return user
     return None
 
-def update_user_credits(user_id: str, new_credits: int) -> bool:
+def update_user_tomatos(user_id: str, new_tomatos: int) -> bool:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
-            res = supabase_client.table("users").update({"credits": new_credits}).eq("id", user_id).execute()
+            res = supabase_client.table("users").update({"tomatos": new_tomatos}).eq("id", user_id).execute()
             if res.data:
                 return True
         except Exception as e:
@@ -453,7 +457,7 @@ def update_user_credits(user_id: str, new_credits: int) -> bool:
     # Fallback to local DB
     for user in mock_db.data["users"]:
         if user["id"] == user_id:
-            user["credits"] = new_credits
+            user["tomatos"] = new_tomatos
             mock_db.save()
             return True
     return False
@@ -461,6 +465,7 @@ def update_user_credits(user_id: str, new_credits: int) -> bool:
 # --- Events Hub ---
 
 def get_events() -> List[Dict[str, Any]]:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("events").select("*").order("date", desc=False).execute()
@@ -486,6 +491,7 @@ def create_event(title: str, description: str, date: str, time: str, venue: str,
         "created_at": datetime.datetime.now().isoformat()
     }
     
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("events").insert(event_data).execute()
@@ -515,6 +521,7 @@ def register_for_event(event_id: int, user_id: str) -> bool:
         "attended": False
     }
     
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("event_registrations").insert(reg_data).execute()
@@ -544,6 +551,7 @@ def register_for_event(event_id: int, user_id: str) -> bool:
     return True
 
 def unregister_from_event(event_id: int, user_id: str) -> bool:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("event_registrations").delete().eq("event_id", event_id).eq("user_id", user_id).execute()
@@ -571,6 +579,7 @@ def unregister_from_event(event_id: int, user_id: str) -> bool:
     return False
 
 def is_user_registered_for_event(event_id: int, user_id: str) -> bool:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("event_registrations").select("*").eq("event_id", event_id).eq("user_id", user_id).execute()
@@ -586,6 +595,7 @@ def is_user_registered_for_event(event_id: int, user_id: str) -> bool:
 
 def get_user_registered_events(user_id: str) -> List[Dict[str, Any]]:
     event_ids = []
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("event_registrations").select("event_id").eq("user_id", user_id).execute()
@@ -607,6 +617,7 @@ def get_user_registered_events(user_id: str) -> List[Dict[str, Any]]:
 # --- Announcements Center ---
 
 def get_announcements() -> List[Dict[str, Any]]:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("announcements").select("*").order("created_at", desc=True).execute()
@@ -627,6 +638,7 @@ def create_announcement(title: str, content: str, category: str, priority: str, 
         "created_at": datetime.datetime.now().isoformat()
     }
     
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("announcements").insert(ann_data).execute()
@@ -661,6 +673,7 @@ def save_announcement(user_id: str, announcement_id: str) -> bool:
         "announcement_id": announcement_id
     }
     
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("saved_announcements").insert(save_data).execute()
@@ -674,6 +687,7 @@ def save_announcement(user_id: str, announcement_id: str) -> bool:
     return True
 
 def unsave_announcement(user_id: str, announcement_id: str) -> bool:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("saved_announcements").delete().eq("user_id", user_id).eq("announcement_id", announcement_id).execute()
@@ -691,6 +705,7 @@ def unsave_announcement(user_id: str, announcement_id: str) -> bool:
     return False
 
 def is_announcement_saved(user_id: str, announcement_id: str) -> bool:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("saved_announcements").select("*").eq("user_id", user_id).eq("announcement_id", announcement_id).execute()
@@ -706,6 +721,7 @@ def is_announcement_saved(user_id: str, announcement_id: str) -> bool:
 
 def get_saved_announcements(user_id: str) -> List[Dict[str, Any]]:
     ann_ids = []
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("saved_announcements").select("announcement_id").eq("user_id", user_id).execute()
@@ -727,6 +743,7 @@ def get_saved_announcements(user_id: str) -> List[Dict[str, Any]]:
 # --- Resource Hub ---
 
 def get_resources() -> List[Dict[str, Any]]:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("resources").select("*").order("created_at", desc=True).execute()
@@ -750,6 +767,7 @@ def upload_resource(title: str, course_code: str, course_name: str, category: st
         "created_at": datetime.datetime.now().isoformat()
     }
     
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("resources").insert(res_data).execute()
@@ -775,6 +793,7 @@ def bookmark_resource(user_id: str, resource_id: str) -> bool:
         "resource_id": resource_id
     }
     
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("bookmarked_resources").insert(bm_data).execute()
@@ -798,6 +817,7 @@ def bookmark_resource(user_id: str, resource_id: str) -> bool:
     return True
 
 def unbookmark_resource(user_id: str, resource_id: str) -> bool:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("bookmarked_resources").delete().eq("user_id", user_id).eq("resource_id", resource_id).execute()
@@ -824,6 +844,7 @@ def unbookmark_resource(user_id: str, resource_id: str) -> bool:
     return False
 
 def is_resource_bookmarked(user_id: str, resource_id: str) -> bool:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("bookmarked_resources").select("*").eq("user_id", user_id).eq("resource_id", resource_id).execute()
@@ -839,6 +860,7 @@ def is_resource_bookmarked(user_id: str, resource_id: str) -> bool:
 
 def get_bookmarked_resources(user_id: str) -> List[Dict[str, Any]]:
     res_ids = []
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("bookmarked_resources").select("resource_id").eq("user_id", user_id).execute()
@@ -860,6 +882,7 @@ def get_bookmarked_resources(user_id: str) -> List[Dict[str, Any]]:
 # --- Peer Logistics ---
 
 def get_logistics_requests() -> List[Dict[str, Any]]:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("peer_logistics").select("*").order("created_at", desc=True).execute()
@@ -870,10 +893,10 @@ def get_logistics_requests() -> List[Dict[str, Any]]:
     # Fallback to local DB
     return sorted(mock_db.data["peer_logistics"], key=lambda x: x["created_at"], reverse=True)
 
-def create_logistics_request(requester_id: str, requester_name: str, title: str, description: str, pickup_location: str, delivery_location: str, credits_offered: int = 5) -> Optional[Dict[str, Any]]:
-    # Check if user has enough credits
+def create_logistics_request(requester_id: str, requester_name: str, title: str, description: str, pickup_location: str, delivery_location: str, tomatos_offered: int = 5) -> Optional[Dict[str, Any]]:
+    # Check if user has enough tomatos
     user = get_user_by_id(requester_id)
-    if not user or user["credits"] < credits_offered:
+    if not user or user["tomatos"] < tomatos_offered:
         return None
         
     req_data = {
@@ -885,26 +908,27 @@ def create_logistics_request(requester_id: str, requester_name: str, title: str,
         "description": description,
         "pickup_location": pickup_location,
         "delivery_location": delivery_location,
-        "credits_offered": credits_offered,
-        "status": "Requested",
+        "tomatos_offered": tomatos_offered,
+        "status": "Request Created",
         "created_at": datetime.datetime.now().isoformat(),
         "updated_at": datetime.datetime.now().isoformat()
     }
     
-    # Deduct credits
-    new_credits = user["credits"] - credits_offered
+    # Deduct tomatos
+    new_tomatos = user["tomatos"] - tomatos_offered
     
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
-            # Update credits
-            supabase_client.table("users").update({"credits": new_credits}).eq("id", requester_id).execute()
+            # Update tomatos
+            supabase_client.table("users").update({"tomatos": new_tomatos}).eq("id", requester_id).execute()
             # Insert request
             res = supabase_client.table("peer_logistics").insert(req_data).execute()
             if res.data:
                 # Log transaction
-                supabase_client.table("credit_transactions").insert({
+                supabase_client.table("tomato_transactions").insert({
                     "user_id": requester_id,
-                    "amount": -credits_offered,
+                    "amount": -tomatos_offered,
                     "description": f"Created delivery request '{title}'"
                 }).execute()
                 return res.data[0]
@@ -916,17 +940,17 @@ def create_logistics_request(requester_id: str, requester_name: str, title: str,
     req_data["id"] = new_id
     mock_db.data["peer_logistics"].append(req_data)
     
-    # Deduct credits locally
+    # Deduct tomatos locally
     for u in mock_db.data["users"]:
         if u["id"] == requester_id:
-            u["credits"] = new_credits
+            u["tomatos"] = new_tomatos
             break
             
     # Log transaction locally
-    mock_db.data["credit_transactions"].append({
+    mock_db.data["tomato_transactions"].append({
         "id": f"ct-{uuid.uuid4().hex[:8]}",
         "user_id": requester_id,
-        "amount": -credits_offered,
+        "amount": -tomatos_offered,
         "description": f"Created delivery request '{title}'",
         "created_at": datetime.datetime.now().isoformat()
     })
@@ -935,19 +959,20 @@ def create_logistics_request(requester_id: str, requester_name: str, title: str,
     add_notification(
         user_id=requester_id,
         title="Delivery Request Created",
-        content=f"Requested '{title}'. {credits_offered} credits held."
+        content=f"Requested '{title}'. {tomatos_offered} tomatos held."
     )
     
     mock_db.save()
     return req_data
 
 def accept_logistics_request(request_id: str, helper_id: str, helper_name: str) -> bool:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("peer_logistics").update({
                 "helper_id": helper_id,
                 "helper_name": helper_name,
-                "status": "Accepted",
+                "status": "Matched",
                 "updated_at": datetime.datetime.now().isoformat()
             }).eq("id", request_id).execute()
             if res.data:
@@ -964,11 +989,11 @@ def accept_logistics_request(request_id: str, helper_id: str, helper_name: str) 
     # Fallback to local DB
     for req in mock_db.data["peer_logistics"]:
         if req["id"] == request_id:
-            if req["status"] != "Requested":
+            if req["status"] != "Request Created":
                 return False  # Already accepted
             req["helper_id"] = helper_id
             req["helper_name"] = helper_name
-            req["status"] = "Accepted"
+            req["status"] = "Matched"
             req["updated_at"] = datetime.datetime.now().isoformat()
             
             # Notify requester
@@ -983,6 +1008,7 @@ def accept_logistics_request(request_id: str, helper_id: str, helper_name: str) 
 
 def update_logistics_status(request_id: str, status: str) -> bool:
     # Status can be 'Picked Up' or 'Delivered'
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             req_check = supabase_client.table("peer_logistics").select("*").eq("id", request_id).execute()
@@ -1003,23 +1029,23 @@ def update_logistics_status(request_id: str, status: str) -> bool:
                     content=f"Your delivery request '{req['title']}' is now {status.lower()}."
                 )
                 
-                # If delivered, credit the helper
+                # If delivered, tomato the helper
                 if status == "Delivered" and req["helper_id"]:
                     helper = get_user_by_id(req["helper_id"])
                     if helper:
-                        new_helper_credits = helper["credits"] + req["credits_offered"]
-                        supabase_client.table("users").update({"credits": new_helper_credits}).eq("id", req["helper_id"]).execute()
+                        new_helper_tomatos = helper["tomatos"] + req["tomatos_offered"]
+                        supabase_client.table("users").update({"tomatos": new_helper_tomatos}).eq("id", req["helper_id"]).execute()
                         # Log transaction
-                        supabase_client.table("credit_transactions").insert({
+                        supabase_client.table("tomato_transactions").insert({
                             "user_id": req["helper_id"],
-                            "amount": req["credits_offered"],
+                            "amount": req["tomatos_offered"],
                             "description": f"Completed delivery for '{req['title']}'"
                         }).execute()
                         # Notify helper
                         add_notification(
                             user_id=req["helper_id"],
-                            title="Credits Rewarded",
-                            content=f"Earned +{req['credits_offered']} credits for delivering '{req['title']}'."
+                            title="Tomatos Rewarded",
+                            content=f"Earned +{req['tomatos_offered']} tomatos for delivering '{req['title']}'."
                         )
                 return True
         except Exception as e:
@@ -1038,44 +1064,46 @@ def update_logistics_status(request_id: str, status: str) -> bool:
                 content=f"Your delivery request '{req['title']}' is now {status.lower()}."
             )
             
-            # Credit the helper if delivered
+            # Tomato the helper if delivered
             if status == "Delivered" and req["helper_id"]:
                 for u in mock_db.data["users"]:
                     if u["id"] == req["helper_id"]:
-                        u["credits"] = u.get("credits", 0) + req["credits_offered"]
+                        u["tomatos"] = u.get("tomatos", 0) + req["tomatos_offered"]
                         break
-                mock_db.data["credit_transactions"].append({
+                mock_db.data["tomato_transactions"].append({
                     "id": f"ct-{uuid.uuid4().hex[:8]}",
                     "user_id": req["helper_id"],
-                    "amount": req["credits_offered"],
+                    "amount": req["tomatos_offered"],
                     "description": f"Completed delivery for '{req['title']}'",
                     "created_at": datetime.datetime.now().isoformat()
                 })
                 # Notify helper
                 add_notification(
                     user_id=req["helper_id"],
-                    title="Credits Earned!",
-                    content=f"Earned +{req['credits_offered']} credits for delivering '{req['title']}'."
+                    title="Tomatos Earned!",
+                    content=f"Earned +{req['tomatos_offered']} tomatos for delivering '{req['title']}'."
                 )
             mock_db.save()
             return True
     return False
 
-def get_credit_transactions(user_id: str) -> List[Dict[str, Any]]:
+def get_tomato_transactions(user_id: str) -> List[Dict[str, Any]]:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
-            res = supabase_client.table("credit_transactions").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
+            res = supabase_client.table("tomato_transactions").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
             return res.data
         except Exception as e:
             print(f"Supabase error: {e}")
             
     # Fallback to local DB
-    return sorted([t for t in mock_db.data["credit_transactions"] if t["user_id"] == user_id], key=lambda x: x["created_at"], reverse=True)
+    return sorted([t for t in mock_db.data["tomato_transactions"] if t["user_id"] == user_id], key=lambda x: x["created_at"], reverse=True)
 
 
 # --- Lost & Found ---
 
 def get_lost_found_items() -> List[Dict[str, Any]]:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("lost_found").select("*").order("created_at", desc=True).execute()
@@ -1100,6 +1128,7 @@ def report_lost_found_item(title: str, description: str, category: str, item_typ
         "created_at": datetime.datetime.now().isoformat()
     }
     
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("lost_found").insert(item_data).execute()
@@ -1116,6 +1145,7 @@ def report_lost_found_item(title: str, description: str, category: str, item_typ
     return item_data
 
 def update_lost_found_status(item_id: str, status: str) -> bool:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("lost_found").update({"status": status}).eq("id", item_id).execute()
@@ -1135,6 +1165,7 @@ def update_lost_found_status(item_id: str, status: str) -> bool:
 # --- Notifications ---
 
 def get_notifications(user_id: str) -> List[Dict[str, Any]]:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("notifications").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
@@ -1154,6 +1185,7 @@ def add_notification(user_id: str, title: str, content: str) -> Dict[str, Any]:
         "created_at": datetime.datetime.now().isoformat()
     }
     
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("notifications").insert(notif_data).execute()
@@ -1170,6 +1202,7 @@ def add_notification(user_id: str, title: str, content: str) -> Dict[str, Any]:
     return notif_data
 
 def mark_notification_as_read(notif_id: str) -> bool:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("notifications").update({"read": True}).eq("id", notif_id).execute()
@@ -1186,6 +1219,7 @@ def mark_notification_as_read(notif_id: str) -> bool:
     return False
 
 def clear_all_notifications(user_id: str) -> bool:
+    mock_db.load_or_initialize()
     if USE_SUPABASE:
         try:
             res = supabase_client.table("notifications").delete().eq("user_id", user_id).execute()
@@ -1197,3 +1231,28 @@ def clear_all_notifications(user_id: str) -> bool:
     mock_db.data["notifications"] = [n for n in mock_db.data["notifications"] if n["user_id"] != user_id]
     mock_db.save()
     return True
+
+def add_tomato_transaction(user_id: str, amount: int, description: str):
+    if USE_SUPABASE and supabase_client:
+        try:
+            supabase_client.table('tomato_transactions').insert({
+                'user_id': user_id,
+                'amount': amount,
+                'description': description
+            }).execute()
+        except Exception as e:
+            print(f'Error adding transaction to Supabase: {e}')
+    else:
+        db = CampusMockDatabase()
+        if 'tomato_transactions' not in db.data:
+            db.data['tomato_transactions'] = []
+        import uuid
+        import datetime
+        db.data['tomato_transactions'].append({
+            'id': str(uuid.uuid4()),
+            'user_id': user_id,
+            'amount': amount,
+            'description': description,
+            'created_at': datetime.datetime.utcnow().isoformat() + 'Z'
+        })
+        db.save()

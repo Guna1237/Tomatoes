@@ -1,7 +1,7 @@
 import streamlit as st
 import datetime
 import os
-import database
+import services
 import ui_components
 
 # Ensure local uploads directory exists
@@ -26,7 +26,7 @@ def render(user: dict):
         "Share a Resource"
     ])
     
-    resources = database.get_resources()
+    resources = services.ResourceService.get_all()
     
     # --- Tab 1: Explore Resources ---
     with tab_explore:
@@ -57,7 +57,7 @@ def render(user: dict):
             for idx, res in enumerate(filtered_res):
                 col = res_cols[idx % 2]
                 with col:
-                    is_bookmarked = database.is_resource_bookmarked(user_id, res["id"])
+                    is_bookmarked = services.ResourceService.is_bookmarked(user_id, res["id"])
                     
                     # Icons mapping
                     cat_icons = {
@@ -100,12 +100,12 @@ def render(user: dict):
                         # Bookmark toggle
                         if is_bookmarked:
                             if st.button("Remove Bookmark", key=f"unbm_{res['id']}", use_container_width=True):
-                                database.unbookmark_resource(user_id, res["id"])
+                                services.ResourceService.unbookmark(user_id, res["id"])
                                 st.success("Removed bookmark.")
                                 ui_components.safe_rerun()
                         else:
                             if st.button("Bookmark Resource", key=f"bm_{res['id']}", use_container_width=True):
-                                database.bookmark_resource(user_id, res["id"])
+                                services.ResourceService.bookmark(user_id, res["id"])
                                 st.success("Bookmarked resource!")
                                 ui_components.safe_rerun()
                                 
@@ -147,7 +147,7 @@ def render(user: dict):
             
     # --- Tab 2: Bookmarked Resources ---
     with tab_bookmarks:
-        bookmarked_res = database.get_bookmarked_resources(user_id)
+        bookmarked_res = services.ResourceService.get_user_bookmarked(user_id)
         if bookmarked_res:
             res_cols = st.columns(2)
             for idx, res in enumerate(bookmarked_res):
@@ -184,7 +184,7 @@ def render(user: dict):
                     act_col1, act_col2 = col.columns(2)
                     with act_col1:
                         if st.button("Remove Bookmark", key=f"unbm_tab_{res['id']}", use_container_width=True):
-                            database.unbookmark_resource(user_id, res["id"])
+                            services.ResourceService.unbookmark(user_id, res["id"])
                             st.success("Bookmark removed.")
                             ui_components.safe_rerun()
                     with act_col2:
@@ -251,7 +251,7 @@ def render(user: dict):
                             f.write(uploaded_file.getbuffer())
                             
                         # Save resource metadata into DB
-                        database.upload_resource(
+                        services.ResourceService.upload(
                             title=res_title,
                             course_code=res_code,
                             course_name=res_name,

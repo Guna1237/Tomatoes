@@ -1,7 +1,7 @@
 import streamlit as st
 import datetime
 import calendar
-import database
+import services
 import ui_components
 
 def render(user: dict):
@@ -25,7 +25,7 @@ def render(user: dict):
         "Host an Event"
     ])
     
-    events = database.get_events()
+    events = services.EventService.get_all()
     
     # --- Tab 1: Explore Events ---
     with tab_explore:
@@ -57,41 +57,51 @@ def render(user: dict):
                     date_obj = datetime.date.fromisoformat(event["date"])
                     formatted_date = date_obj.strftime("%A, %b %d, %Y")
                     
-                    is_registered = database.is_user_registered_for_event(event["id"], user_id)
+                    is_registered = services.EventService.is_registered(event["id"], user_id)
                     spots_left = max(0, event["capacity"] - event["registered_count"])
                     fill_pct = min(100, int((event["registered_count"] / event["capacity"]) * 100))
                     
-                    # Custom Event Card HTML
+                    # Custom Eventbrite-style Card
                     col.markdown(f"""
-                    <div class="premium-card">
-                        <img src="{event['banner_url']}" class="event-banner" />
-                        <h4 style="margin: 4px 0 2px 0; color: #FFFFFF; font-size: 1.15rem;">{event['title']}</h4>
-                        <span class="category-tag" style="margin-bottom: 8px; display: inline-block;">Organized by {event['organizer_name']}</span>
-                        <p style="margin: 0; color: #94A3B8; font-size: 0.88rem; line-height: 1.4; height: 60px; overflow: hidden; text-overflow: ellipsis;">
-                            {event['description'][:130]}...
-                        </p>
-                        
-                        <div class="info-row" style="margin-top: 12px; margin-bottom: 8px;">
-                            <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 13px;"></i> {formatted_date} at {event['time']}</span>
-                            <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="map-pin" style="width: 13px;"></i> {event['venue']}</span>
-                        </div>
-                        
-                        <div style="margin-top: 10px; margin-bottom: 12px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #94A3B8; margin-bottom: 4px;">
-                                <span>{event['registered_count']}/{event['capacity']} spots filled</span>
-                                <span>{spots_left} left</span>
-                            </div>
-                            <div style="background-color: #2D3748; height: 4px; border-radius: 2px;">
-                                <div style="background-color: #3B82F6; width: {fill_pct}%; height: 100%; border-radius: 2px;"></div>
-                            </div>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
+<div class="premium-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+<div style="position: relative; height: 140px; width: 100%;">
+<img src="{event['banner_url']}" style="width: 100%; height: 100%; object-fit: cover;" />
+<div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; color: #fff; font-weight: 600;">
+{spots_left} Seats Left
+</div>
+</div>
+<div style="padding: 1.25rem; flex-grow: 1; display: flex; flex-direction: column;">
+<h4 style="margin: 0 0 6px 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700;">{event['title']}</h4>
+<p style="margin: 0; color: var(--accent); font-size: 0.85rem; font-weight: 600; margin-bottom: 12px;">{formatted_date} @ {event['time']}</p>
+<div style="margin-bottom: 16px; font-size: 0.85rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px;">
+<div style="display: flex; align-items: flex-start; gap: 8px;">
+<i data-lucide="map-pin" style="width: 14px; margin-top: 2px;"></i>
+<div>
+<div style="font-weight: 500; color: var(--text-primary);">{event['venue']}</div>
+<div style="color: var(--accent); font-size: 0.75rem; cursor: pointer;">Show map</div>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 8px;">
+<i data-lucide="building" style="width: 14px;"></i>
+<span>By {event['organizer_name']}</span>
+</div>
+</div>
+<div style="margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border);">
+<div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px;">
+<span>{event['registered_count']} / {event['capacity']} Registration</span>
+</div>
+<div style="background-color: var(--border); height: 4px; border-radius: 2px;">
+<div style="background-color: var(--accent); width: {fill_pct}%; height: 100%; border-radius: 2px;"></div>
+</div>
+</div>
+</div>
+</div>
+""", unsafe_allow_html=True)
                     
                     # Streamlit registration buttons
                     if is_registered:
                         if col.button(f"Unregister from {event['title']}", key=st.session_state.get(f"unreg_{event['id']}", f"unreg_btn_{event['id']}"), use_container_width=True):
-                            database.unregister_from_event(event["id"], user_id)
+                            services.EventService.unregister(event["id"], user_id)
                             st.success("Unregistered successfully!")
                             ui_components.safe_rerun()
                     else:
@@ -99,7 +109,7 @@ def render(user: dict):
                             col.button("Event Full", key=f"full_btn_{event['id']}", disabled=True, use_container_width=True)
                         else:
                             if col.button(f"Register for {event['title']}", key=f"reg_btn_{event['id']}", type="primary", use_container_width=True):
-                                database.register_for_event(event["id"], user_id)
+                                services.EventService.register(event["id"], user_id)
                                 st.success("Registered successfully!")
                                 ui_components.safe_rerun()
         else:
@@ -191,51 +201,54 @@ def render(user: dict):
         selected_events = events_by_day.get(sel_day, [])
         if selected_events:
             for event in selected_events:
-                is_registered = database.is_user_registered_for_event(event["id"], user_id)
+                is_registered = services.EventService.is_registered(event["id"], user_id)
                 status_chip = '<span class="priority-badge priority-high" style="margin-left: 10px;">Registered</span>' if is_registered else ''
                 st.markdown(f"""
-                <div class="premium-card" style="padding: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div>
-                            <h5 style="margin: 0; font-size: 1rem; color: #FFFFFF;">{event['title']}{status_chip}</h5>
-                            <span style="font-size: 0.8rem; color: #94A3B8;">Organizer: {event['organizer_name']} | Time: {event['time']} | Venue: {event['venue']}</span>
-                        </div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+<div class="premium-card" style="padding: 1rem;">
+<div style="display: flex; justify-content: space-between; align-items: start;">
+<div>
+<h5 style="margin: 0; font-size: 1rem; color: #FFFFFF;">{event['title']}{status_chip}</h5>
+<span style="font-size: 0.8rem; color: #94A3B8;">Organizer: {event['organizer_name']} | Time: {event['time']} | Venue: {event['venue']}</span>
+</div>
+</div>
+</div>
+""", unsafe_allow_html=True)
         else:
             st.markdown(f"<div style='color: #94A3B8; font-size: 0.9rem;'>No events scheduled for this day.</div>", unsafe_allow_html=True)
 
     # --- Tab 3: My Schedule ---
     with tab_my_events:
-        my_registered_events = database.get_user_registered_events(user_id)
+        my_registered_events = services.EventService.get_user_events(user_id)
         if my_registered_events:
             for event in my_registered_events:
                 date_obj = datetime.date.fromisoformat(event["date"])
                 formatted_date = date_obj.strftime("%A, %b %d, %Y")
                 
-                # Check-in code or toggle
                 st.markdown(f"""
-                <div class="premium-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <h4 style="margin: 0; color: #FFFFFF; font-size: 1.1rem;">{event['title']}</h4>
-                            <p style="margin: 4px 0 0 0; color: #94A3B8; font-size: 0.85rem;">
-                                <i data-lucide="calendar" style="width: 12px; height: 12px; display: inline-block;"></i> {formatted_date} @ {event['time']} &nbsp;|&nbsp; 
-                                <i data-lucide="map-pin" style="width: 12px; height: 12px; display: inline-block;"></i> {event['venue']}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+<div class="premium-card">
+<div style="display: flex; justify-content: space-between; align-items: center;">
+<div>
+<h4 style="margin: 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700;">{event['title']}</h4>
+<p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 0.85rem;">
+<i data-lucide="calendar" style="width: 12px; height: 12px; display: inline-block;"></i> {formatted_date} @ {event['time']} &nbsp;|&nbsp;
+<i data-lucide="map-pin" style="width: 12px; height: 12px; display: inline-block;"></i> {event['venue']}
+</p>
+</div>
+</div>
+</div>
+""", unsafe_allow_html=True)
                 
                 # Action buttons
-                col_btn1, col_btn2 = st.columns([3, 7])
+                col_btn1, col_btn2, col_btn3 = st.columns([3, 3, 4])
                 with col_btn1:
                     if st.button("Cancel Registration", key=f"cancel_reg_{event['id']}", use_container_width=True):
-                        database.unregister_from_event(event["id"], user_id)
+                        services.EventService.unregister(event["id"], user_id)
                         st.success("Cancelled registration.")
                         ui_components.safe_rerun()
+                with col_btn2:
+                    with st.expander("🎟️ Show Attendance QR"):
+                        st.info("Present this QR Code to the organizers to check in.", icon="📱")
+                        st.image("https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + event['id'] + "_" + user_id)
         else:
             ui_components.render_empty_state(
                 title="No registered events",
@@ -269,7 +282,7 @@ def render(user: dict):
                     if not evt_title or not evt_description or not evt_time or not evt_venue:
                         st.error("Please fill in all mandatory fields (*).")
                     else:
-                        database.create_event(
+                        services.EventService.create(
                             title=evt_title,
                             description=evt_description,
                             date=evt_date.isoformat(),
@@ -285,15 +298,15 @@ def render(user: dict):
         else:
             # Student view for hosting request
             st.markdown("""
-            <div class="premium-card" style="text-align: center; padding: 2rem;">
-                <div style="color: #A855F7; margin-bottom: 1rem;"><i data-lucide="shield-alert" style="width: 48px; height: 48px;"></i></div>
-                <h4 style="margin: 0 0 6px 0; color: #FFFFFF;">Club Access Required</h4>
-                <p style="margin: 0; color: #94A3B8; font-size: 0.9rem;">
-                    Only verified student clubs or university admin offices can host events. 
-                    If you represent an official student organization, you can change your profile role to <strong>Club Admin</strong> in the Profile tab to test this functionality.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
+<div class="premium-card" style="text-align: center; padding: 2rem;">
+<div style="color: #A855F7; margin-bottom: 1rem;"><i data-lucide="shield-alert" style="width: 48px; height: 48px;"></i></div>
+<h4 style="margin: 0 0 6px 0; color: #FFFFFF;">Club Access Required</h4>
+<p style="margin: 0; color: #94A3B8; font-size: 0.9rem;">
+Only verified student clubs or university admin offices can host events.
+If you represent an official student organization, you can change your profile role to <strong>Club Admin</strong> in the Profile tab to test this functionality.
+</p>
+</div>
+""", unsafe_allow_html=True)
 
     # Force render icons
     st.markdown(ui_components.LUCIDE_CDN, unsafe_allow_html=True)

@@ -4,37 +4,37 @@
             "id": "u-jane-doe",
             "email": "jane@university.edu",
             "name": "Jane Doe",
-            "credits": 75,
             "avatar_url": "https://api.dicebear.com/7.x/adventurer/svg?seed=jane",
             "role": "club_admin",
-            "created_at": "2026-06-01T10:00:00Z"
+            "created_at": "2026-06-01T10:00:00Z",
+            "tomatos": 75
         },
         {
             "id": "u-john-smith",
             "email": "john@university.edu",
             "name": "John Smith",
-            "credits": 45,
             "avatar_url": "https://api.dicebear.com/7.x/adventurer/svg?seed=john",
             "role": "student",
-            "created_at": "2026-06-02T11:00:00Z"
+            "created_at": "2026-06-02T11:00:00Z",
+            "tomatos": 45
         },
         {
             "id": "u-club-acs",
             "email": "acs@university.edu",
             "name": "Association of Computer Students (ACS)",
-            "credits": 150,
             "avatar_url": "https://api.dicebear.com/7.x/initials/svg?seed=ACS",
             "role": "club_admin",
-            "created_at": "2026-05-15T09:00:00Z"
+            "created_at": "2026-05-15T09:00:00Z",
+            "tomatos": 150
         },
         {
             "id": "u-registrar",
             "email": "registrar@university.edu",
             "name": "Dr. Arthur (Registrar Office)",
-            "credits": 999,
             "avatar_url": "https://api.dicebear.com/7.x/bottts/svg?seed=registrar",
             "role": "admin",
-            "created_at": "2026-05-01T08:00:00Z"
+            "created_at": "2026-05-01T08:00:00Z",
+            "tomatos": 999
         }
     ],
     "events": [
@@ -248,7 +248,7 @@
             "description": "Return 'Introduction to Python' to the library desk. Book is on the desk at Hostel Block A, Room 204. I need it done before library closes at 8 PM.",
             "pickup_location": "Hostel Block A, Room 204",
             "delivery_location": "Central Library Counter",
-            "credits_offered": 5,
+            "tomatos_offered": 5,
             "status": "Delivered",
             "created_at": "2026-06-12T11:00:00Z",
             "updated_at": "2026-06-12T13:45:00Z"
@@ -263,7 +263,7 @@
             "description": "Pick up my printed Chemistry Lab manual from the Xerox shop. It is already paid for under name John. Please drop it off in C hostel.",
             "pickup_location": "Campus Xerox Shop",
             "delivery_location": "Hostel Block C, Room 102",
-            "credits_offered": 5,
+            "tomatos_offered": 5,
             "status": "Requested",
             "created_at": "2026-06-14T09:00:00Z",
             "updated_at": "2026-06-14T09:00:00Z"
@@ -278,7 +278,7 @@
             "description": "Hand over the organic chemistry lecture notes binder to me. John has it in C block.",
             "pickup_location": "Hostel Block C Lobby",
             "delivery_location": "Hostel Block A Room 204",
-            "credits_offered": 5,
+            "tomatos_offered": 5,
             "status": "Accepted",
             "created_at": "2026-06-14T10:00:00Z",
             "updated_at": "2026-06-14T10:30:00Z"
@@ -312,7 +312,113 @@
             "created_at": "2026-06-14T12:00:00Z"
         }
     ],
-    "credit_transactions": [
+    "notifications": [
+        {
+            "id": "n-1",
+            "user_id": "u-jane-doe",
+            "title": "Welcome to CampusConnect",
+            "content": "Welcome to CampusConnect! Start exploring events, checking announcements, and sharing resources.",
+            "read": false,
+            "created_at": "2026-06-14T08:00:00Z"
+        },
+        {
+            "id": "n-2",
+            "user_id": "u-john-smith",
+            "title": "Delivery Completed",
+            "content": "Your logistics delivery for 'Library Book Return' has been marked as delivered. +5 Tomatoes earned!",
+            "read": true,
+            "created_at": "2026-06-12T13:45:00Z"
+        },
+        {
+            "id": "n-3",
+            "user_id": "u-jane-doe",
+            "title": "Logistics Accepted",
+            "content": "John Smith accepted your request 'Chemistry Notes Handover'. Check dashboard for details.",
+            "read": false,
+            "created_at": "2026-06-14T10:30:00Z"
+        },
+        {
+            "user_id": "u-de45b363",
+            "title": "Welcome to CampusConnect",
+            "content": "Hey Test User! Start exploring events, checking announcements, and sharing resources.",
+            "read": false,
+            "created_at": "2026-06-14T20:47:48.556093",
+            "id": "n-3b039ad9"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Delivery Request Created",
+            "content": "Requested 'Test Package'. 5 Tomatoes held.",
+            "read": false,
+            "created_at": "2026-06-14T20:47:48.560725",
+            "id": "n-22867a40"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Logistics Request Accepted",
+            "content": "John Smith has accepted your request 'Test Package'.",
+            "read": false,
+            "created_at": "2026-06-14T20:47:48.564158",
+            "id": "n-a22e09f7"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Logistics Status: Delivered",
+            "content": "Your delivery request 'Test Package' is now delivered.",
+            "read": false,
+            "created_at": "2026-06-14T20:47:48.567157",
+            "id": "n-7b7ad6bb"
+        },
+        {
+            "user_id": "u-john-smith",
+            "title": "Tomatoes Earned!",
+            "content": "Earned +5 Tomatoes for delivering 'Test Package'.",
+            "read": false,
+            "created_at": "2026-06-14T20:47:48.567220",
+            "id": "n-b07e5127"
+        },
+        {
+            "user_id": "u-55d9c9c8",
+            "title": "Welcome to CampusConnect",
+            "content": "Hey Test User! Start exploring events, checking announcements, and sharing resources.",
+            "read": false,
+            "created_at": "2026-06-14T21:54:55.527733",
+            "id": "n-7c8e7e2e"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Delivery Request Created",
+            "content": "Requested 'Test Package'. 5 Tomatoes held.",
+            "read": false,
+            "created_at": "2026-06-14T21:54:55.530032",
+            "id": "n-bfe068c6"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Logistics Request Accepted",
+            "content": "John Smith has accepted your request 'Test Package'.",
+            "read": false,
+            "created_at": "2026-06-14T21:54:55.532279",
+            "id": "n-4b7534f8"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Logistics Status: Delivered",
+            "content": "Your delivery request 'Test Package' is now delivered.",
+            "read": false,
+            "created_at": "2026-06-14T21:54:55.534791",
+            "id": "n-91c0f7c7"
+        },
+        {
+            "user_id": "u-john-smith",
+            "title": "Tomatoes Earned!",
+            "content": "Earned +5 Tomatoes for delivering 'Test Package'.",
+            "read": false,
+            "created_at": "2026-06-14T21:54:55.534868",
+            "id": "n-6580e50a"
+        }
+    ],
+    "tomato_transactions": [
         {
             "id": "ct-1",
             "user_id": "u-jane-doe",
@@ -354,112 +460,6 @@
             "amount": 5,
             "description": "Completed delivery for 'Test Package'",
             "created_at": "2026-06-14T21:54:55.534856"
-        }
-    ],
-    "notifications": [
-        {
-            "id": "n-1",
-            "user_id": "u-jane-doe",
-            "title": "Welcome to CampusConnect",
-            "content": "Welcome to CampusConnect! Start exploring events, checking announcements, and sharing resources.",
-            "read": false,
-            "created_at": "2026-06-14T08:00:00Z"
-        },
-        {
-            "id": "n-2",
-            "user_id": "u-john-smith",
-            "title": "Delivery Completed",
-            "content": "Your logistics delivery for 'Library Book Return' has been marked as delivered. +5 credits earned!",
-            "read": true,
-            "created_at": "2026-06-12T13:45:00Z"
-        },
-        {
-            "id": "n-3",
-            "user_id": "u-jane-doe",
-            "title": "Logistics Accepted",
-            "content": "John Smith accepted your request 'Chemistry Notes Handover'. Check dashboard for details.",
-            "read": false,
-            "created_at": "2026-06-14T10:30:00Z"
-        },
-        {
-            "user_id": "u-de45b363",
-            "title": "Welcome to CampusConnect",
-            "content": "Hey Test User! Start exploring events, checking announcements, and sharing resources.",
-            "read": false,
-            "created_at": "2026-06-14T20:47:48.556093",
-            "id": "n-3b039ad9"
-        },
-        {
-            "user_id": "u-jane-doe",
-            "title": "Delivery Request Created",
-            "content": "Requested 'Test Package'. 5 credits held.",
-            "read": false,
-            "created_at": "2026-06-14T20:47:48.560725",
-            "id": "n-22867a40"
-        },
-        {
-            "user_id": "u-jane-doe",
-            "title": "Logistics Request Accepted",
-            "content": "John Smith has accepted your request 'Test Package'.",
-            "read": false,
-            "created_at": "2026-06-14T20:47:48.564158",
-            "id": "n-a22e09f7"
-        },
-        {
-            "user_id": "u-jane-doe",
-            "title": "Logistics Status: Delivered",
-            "content": "Your delivery request 'Test Package' is now delivered.",
-            "read": false,
-            "created_at": "2026-06-14T20:47:48.567157",
-            "id": "n-7b7ad6bb"
-        },
-        {
-            "user_id": "u-john-smith",
-            "title": "Credits Earned!",
-            "content": "Earned +5 credits for delivering 'Test Package'.",
-            "read": false,
-            "created_at": "2026-06-14T20:47:48.567220",
-            "id": "n-b07e5127"
-        },
-        {
-            "user_id": "u-55d9c9c8",
-            "title": "Welcome to CampusConnect",
-            "content": "Hey Test User! Start exploring events, checking announcements, and sharing resources.",
-            "read": false,
-            "created_at": "2026-06-14T21:54:55.527733",
-            "id": "n-7c8e7e2e"
-        },
-        {
-            "user_id": "u-jane-doe",
-            "title": "Delivery Request Created",
-            "content": "Requested 'Test Package'. 5 credits held.",
-            "read": false,
-            "created_at": "2026-06-14T21:54:55.530032",
-            "id": "n-bfe068c6"
-        },
-        {
-            "user_id": "u-jane-doe",
-            "title": "Logistics Request Accepted",
-            "content": "John Smith has accepted your request 'Test Package'.",
-            "read": false,
-            "created_at": "2026-06-14T21:54:55.532279",
-            "id": "n-4b7534f8"
-        },
-        {
-            "user_id": "u-jane-doe",
-            "title": "Logistics Status: Delivered",
-            "content": "Your delivery request 'Test Package' is now delivered.",
-            "read": false,
-            "created_at": "2026-06-14T21:54:55.534791",
-            "id": "n-91c0f7c7"
-        },
-        {
-            "user_id": "u-john-smith",
-            "title": "Credits Earned!",
-            "content": "Earned +5 credits for delivering 'Test Package'.",
-            "read": false,
-            "created_at": "2026-06-14T21:54:55.534868",
-            "id": "n-6580e50a"
         }
     ]
 }

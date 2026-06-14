@@ -2,7 +2,7 @@ import streamlit as st
 import datetime
 import os
 import uuid
-import database
+import services
 import ui_components
 
 # Use shared uploads directory
@@ -26,7 +26,7 @@ def render(user: dict):
         "Report Lost / Found Item"
     ])
     
-    items = database.get_lost_found_items()
+    items = services.LostFoundService.get_all()
     
     # --- Tab 1: Explore Items ---
     with tab_explore:
@@ -111,7 +111,7 @@ def render(user: dict):
                         # If current user reported it, let them mark it as resolved
                         if item["reporter_id"] == user_id:
                             if st.button("Mark Resolved", key=f"resolve_lf_{item['id']}", type="primary", use_container_width=True):
-                                database.update_lost_found_status(item["id"], "Resolved")
+                                services.LostFoundService.update_status(item["id"], "Resolved")
                                 st.success("Marked as resolved!")
                                 ui_components.safe_rerun()
                         else:
@@ -120,7 +120,7 @@ def render(user: dict):
                             if st.button(button_label, key=f"claim_lf_{item['id']}", type="primary", use_container_width=True):
                                 # Send notification to the reporter
                                 contact_msg = f"{user['name']} ({user['email']}) is claiming/inquiring about your item '{item['title']}'. Please contact them."
-                                database.add_notification(
+                                services.NotificationService.add(
                                     user_id=item["reporter_id"],
                                     title=f"Lost & Found Claim: {item['title']}",
                                     content=contact_msg
@@ -175,7 +175,7 @@ def render(user: dict):
                             image_path = None
                             
                     # Save report
-                    database.report_lost_found_item(
+                    services.LostFoundService.report(
                         title=lf_title,
                         description=lf_desc,
                         category=lf_cat,

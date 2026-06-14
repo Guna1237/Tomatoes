@@ -340,6 +340,20 @@
             "amount": 5,
             "description": "Completed delivery for 'Test Package'",
             "created_at": "2026-06-14T20:47:48.567208"
+        },
+        {
+            "id": "ct-68973520",
+            "user_id": "u-jane-doe",
+            "amount": -5,
+            "description": "Created delivery request 'Test Package'",
+            "created_at": "2026-06-14T21:54:55.530023"
+        },
+        {
+            "id": "ct-4effe352",
+            "user_id": "u-john-smith",
+            "amount": 5,
+            "description": "Completed delivery for 'Test Package'",
+            "created_at": "2026-06-14T21:54:55.534856"
         }
     ],
     "notifications": [
@@ -406,6 +420,46 @@
             "read": false,
             "created_at": "2026-06-14T20:47:48.567220",
             "id": "n-b07e5127"
+        },
+        {
+            "user_id": "u-55d9c9c8",
+            "title": "Welcome to CampusConnect",
+            "content": "Hey Test User! Start exploring events, checking announcements, and sharing resources.",
+            "read": false,
+            "created_at": "2026-06-14T21:54:55.527733",
+            "id": "n-7c8e7e2e"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Delivery Request Created",
+            "content": "Requested 'Test Package'. 5 credits held.",
+            "read": false,
+            "created_at": "2026-06-14T21:54:55.530032",
+            "id": "n-bfe068c6"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Logistics Request Accepted",
+            "content": "John Smith has accepted your request 'Test Package'.",
+            "read": false,
+            "created_at": "2026-06-14T21:54:55.532279",
+            "id": "n-4b7534f8"
+        },
+        {
+            "user_id": "u-jane-doe",
+            "title": "Logistics Status: Delivered",
+            "content": "Your delivery request 'Test Package' is now delivered.",
+            "read": false,
+            "created_at": "2026-06-14T21:54:55.534791",
+            "id": "n-91c0f7c7"
+        },
+        {
+            "user_id": "u-john-smith",
+            "title": "Credits Earned!",
+            "content": "Earned +5 credits for delivering 'Test Package'.",
+            "read": false,
+            "created_at": "2026-06-14T21:54:55.534868",
+            "id": "n-6580e50a"
         }
     ]
 }

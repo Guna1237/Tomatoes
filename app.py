@@ -8,17 +8,49 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-import os
 import services
 import ui_components
 from modules import dashboard, events, announcements, resources, logistics, lost_found, profile
 from auth import get_current_session, login, signup, logout
 
-# Ensure modules package exists
-os.makedirs(r"c:\Users\notgu\OneDrive\Documents\campus\modules", exist_ok=True)
-_init_path = r"c:\Users\notgu\OneDrive\Documents\campus\modules\__init__.py"
-if not os.path.exists(_init_path):
-    open(_init_path, "a").close()
+# Hardcoded demo profiles — no Supabase lookup needed for demo mode.
+# IDs are intentionally fake UUIDs; DB reads return empty which is handled
+# gracefully by every module's empty-state UI.
+_DEMO_PROFILES = {
+    "jane@university.edu": {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "email": "jane@university.edu",
+        "name": "Jane Doe",
+        "role": "student",
+        "tomato_balance": 50,
+        "tomatos": 50,
+        "bio": "Computer Science, Year 3",
+        "avatar_url": "",
+        "created_at": "2025-01-01T00:00:00",
+    },
+    "acs@university.edu": {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "email": "acs@university.edu",
+        "name": "ACS Club",
+        "role": "club_admin",
+        "tomato_balance": 50,
+        "tomatos": 50,
+        "bio": "Association of Computer Science",
+        "avatar_url": "",
+        "created_at": "2025-01-01T00:00:00",
+    },
+    "registrar@university.edu": {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "email": "registrar@university.edu",
+        "name": "Dr. Arthur",
+        "role": "admin",
+        "tomato_balance": 100,
+        "tomatos": 100,
+        "bio": "Office of the Registrar",
+        "avatar_url": "",
+        "created_at": "2025-01-01T00:00:00",
+    },
+}
 
 # ── Inject global styles ──────────────────────────────────────────────────────
 ui_components.inject_custom_styles()
@@ -102,33 +134,24 @@ if not user:
             unsafe_allow_html=True,
         )
         d1, d2, d3 = st.columns(3)
+        def _demo_login(email: str) -> None:
+            try:
+                user = services.UserService.get_by_email(email)
+            except Exception:
+                user = None
+            st.session_state["user"] = user or _DEMO_PROFILES[email]
+            st.session_state["access_token"] = "demo"
+            st.rerun()
+
         with d1:
             if st.button("Student", key="demo_student", use_container_width=True):
-                demo_user = services.UserService.get_by_email("jane@university.edu")
-                if demo_user:
-                    st.session_state["user"] = demo_user
-                    st.session_state["access_token"] = "demo"
-                    st.rerun()
-                else:
-                    st.warning("Demo user not found.")
+                _demo_login("jane@university.edu")
         with d2:
             if st.button("Club Admin", key="demo_club", use_container_width=True):
-                demo_user = services.UserService.get_by_email("acs@university.edu")
-                if demo_user:
-                    st.session_state["user"] = demo_user
-                    st.session_state["access_token"] = "demo"
-                    st.rerun()
-                else:
-                    st.warning("Demo user not found.")
+                _demo_login("acs@university.edu")
         with d3:
             if st.button("Admin", key="demo_admin", use_container_width=True):
-                demo_user = services.UserService.get_by_email("registrar@university.edu")
-                if demo_user:
-                    st.session_state["user"] = demo_user
-                    st.session_state["access_token"] = "demo"
-                    st.rerun()
-                else:
-                    st.warning("Demo user not found.")
+                _demo_login("registrar@university.edu")
 
     st.markdown(ui_components.LUCIDE_CDN, unsafe_allow_html=True)
     st.stop()

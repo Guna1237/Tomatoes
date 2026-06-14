@@ -115,18 +115,19 @@ def signup(
 
     user_id: str = response.user.id
 
-    # Insert public profile row.
-    try:
-        insert_data: dict = {
-            "id": user_id,
-            "email": email.strip().lower(),
-            "name": name.strip(),
-            "role": safe_role,
-        }
-        result = client.table("users").insert(insert_data).execute()
-        profile: dict = result.data[0] if result.data else insert_data
-    except Exception as exc:
-        return None, f"Account created but profile setup failed: {exc}"
+    # The DB trigger (handle_new_auth_user) auto-creates the public.users row.
+    # Try to read it back; if not ready yet, build a minimal in-memory profile.
+    profile: dict = get_user_profile(user_id) or {
+        "id": user_id,
+        "email": email.strip().lower(),
+        "name": name.strip(),
+        "role": safe_role,
+        "tomato_balance": 50,
+        "tomatos": 50,
+        "avatar_url": None,
+        "bio": None,
+        "created_at": None,
+    }
 
     # Store session only when Supabase returns a live session (email
     # confirmation may be required depending on project settings).

@@ -381,6 +381,32 @@ CREATE TRIGGER trg_lf_updated_at
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
 -- =============================================================================
+-- TRIGGER – auto-create public.users profile on Supabase Auth signup
+-- Runs with SECURITY DEFINER so it bypasses RLS (no JWT required).
+-- =============================================================================
+
+CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.users (id, email, name, role, tomato_balance)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
+    'student',
+    50
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
+
+-- =============================================================================
 -- STORAGE
 -- =============================================================================
 -- Run these steps manually in the Supabase Dashboard → Storage:

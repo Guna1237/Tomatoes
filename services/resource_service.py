@@ -70,8 +70,8 @@ class ResourceService:
             "file_size_mb": round(size_mb, 2),
             "uploader_id": uploader["id"],
             "uploader_name": uploader.get("name", ""),
-            "download_count": 0,
-            "bookmark_count": 0,
+            "downloads_count": 0,
+            "bookmarks_count": 0,
             "is_active": True,
         }
         new_resource = resource_repo.create_resource(data)

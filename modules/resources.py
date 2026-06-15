@@ -12,7 +12,7 @@ CAT_ICONS = {
     "Notes": "book-open",
     "PYQs": "help-circle",
     "PPTs": "presentation",
-    "PDFs": "file",
+    "Lab Manuals": "flask-conical",
     "Study guides": "compass",
 }
 
@@ -43,7 +43,7 @@ def _resource_card(col, res: dict, tab_prefix: str, user_id: str) -> None:
   </div>
   <div style="font-size:0.78rem;color:#9197AE;margin-top:6px;">
     <i data-lucide="bookmark" style="width:12px;display:inline-block;vertical-align:middle;"></i>
-    {res.get('bookmark_count', 0)} bookmarks
+    {res.get('bookmarks_count', 0)} bookmarks
   </div>
 </div>""",
         unsafe_allow_html=True,
@@ -127,7 +127,7 @@ def render(user: dict) -> None:
             course_filter = st.selectbox("Course Code", course_codes, key="res_course")
         with col_cat:
             cat_filter = st.selectbox(
-                "Category", ["All Types", "Notes", "PYQs", "PPTs", "PDFs", "Study guides"], key="res_cat"
+                "Category", ["All Types", "Notes", "PYQs", "PPTs", "Study guides", "Lab Manuals"], key="res_cat"
             )
 
         filtered = all_resources
@@ -184,7 +184,7 @@ def render(user: dict) -> None:
             with c2:
                 res_name = st.text_input("Course Name *", placeholder="e.g. Data Structures")
 
-            res_cat = st.selectbox("Category *", ["Notes", "PYQs", "PPTs", "PDFs", "Study guides"])
+            res_cat = st.selectbox("Category *", ["Notes", "PYQs", "PPTs", "Study guides", "Lab Manuals"])
             uploaded_file = st.file_uploader(
                 "Upload file", type=["pdf", "pptx", "ppt", "docx", "doc"]
             )

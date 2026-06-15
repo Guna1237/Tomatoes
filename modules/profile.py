@@ -203,7 +203,7 @@ def render(user: dict) -> None:
         # ── Tab 2: Notifications ──────────────────────────────────────────────
         with tab_notifs:
             ctrl1, ctrl2, ctrl3 = st.columns([5, 2, 2])
-            unread_count = len([n for n in notifications if not n.get("is_read")])
+            unread_count = len([n for n in notifications if not n.get("read")])
             with ctrl1:
                 st.markdown(
                     f"<h4 style='color:#EFF6EE;margin:0;'>"
@@ -214,7 +214,7 @@ def render(user: dict) -> None:
             with ctrl2:
                 if notifications and st.button("Mark All Read", key="notif_mark_all", use_container_width=True):
                     for n in notifications:
-                        if not n.get("is_read"):
+                        if not n.get("read"):
                             try:
                                 services.NotificationService.mark_read(n["id"])
                             except Exception:
@@ -247,13 +247,14 @@ def render(user: dict) -> None:
                     if len(str(notif.get("content", ""))) > 120:
                         content_preview += "…"
 
-                    notif_type = notif.get("type", "info")
+                    notif_type = notif.get("notification_type", "general")
                     type_colors = {
-                        "info": "#3B82F6",
-                        "success": "#22C55E",
-                        "warning": "#EAB308",
-                        "error": "#EF4444",
-                        "delivery": "#FB923C",
+                        "event": "#A855F7",
+                        "parcel": "#FB923C",
+                        "resource": "#3B82F6",
+                        "announcement": "#EAB308",
+                        "lost_found": "#22C55E",
+                        "general": "#9197AE",
                     }
                     badge_color = type_colors.get(notif_type, "#9197AE")
 

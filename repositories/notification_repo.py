@@ -29,7 +29,7 @@ def get_unread_count(user_id: str) -> int:
             client.table("notifications")
             .select("id", count="exact")
             .eq("user_id", user_id)
-            .eq("is_read", False)
+            .eq("read", False)
             .execute()
         )
         return result.count or 0
@@ -51,8 +51,8 @@ def add_notification(
             "user_id": user_id,
             "title": title,
             "content": content,
-            "type": notif_type,
-            "is_read": False,
+            "notification_type": notif_type,
+            "read": False,
         }
         if related_id:
             data["related_id"] = related_id
@@ -67,7 +67,7 @@ def add_notification(
 def mark_read(notif_id: str) -> bool:
     try:
         client = get_client()
-        client.table("notifications").update({"is_read": True}).eq("id", notif_id).execute()
+        client.table("notifications").update({"read": True}).eq("id", notif_id).execute()
         st.cache_data.clear()
         return True
     except Exception as e:
@@ -78,7 +78,7 @@ def mark_read(notif_id: str) -> bool:
 def mark_all_read(user_id: str) -> bool:
     try:
         client = get_client()
-        client.table("notifications").update({"is_read": True}).eq("user_id", user_id).execute()
+        client.table("notifications").update({"read": True}).eq("user_id", user_id).execute()
         st.cache_data.clear()
         return True
     except Exception as e:

@@ -1,837 +1,570 @@
 import streamlit as st
-import datetime
 
-# Lucide Icons CDN Script
-LUCIDE_CDN = '<script src="https://unpkg.com/lucide@latest"></script><script>setTimeout(() => { lucide.createIcons(); }, 100);</script>'
+LUCIDE_CDN = '<script src="https://unpkg.com/lucide@latest"></script><script>setTimeout(()=>{if(window.lucide)lucide.createIcons();},150);</script>'
 
-# Global CSS stylesheet for custom styling, theme, animations, and overriding Streamlit UI
 GLOBAL_CSS = """
 <style>
-/* Import Space Grotesk and Space Mono */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --bg-primary: #0F1117;
-  --bg-secondary: #161B22;
-  --sidebar: #161B22;
-  --sidebar-hover: #2D3748;
-  --text-primary: #FFFFFF;
-  --text-secondary: #94A3B8;
-  --border: #2D3748;
-  --accent: #3B82F6;
-  --accent-hover: #60A5FA;
-  --success: #22C55E;
-  --warning: #F59E0B;
+  --bg: #0A0C10;
+  --surface: #111318;
+  --surface2: #161B23;
+  --border: rgba(255,255,255,0.07);
+  --border-red: rgba(221,4,38,0.25);
+  --text: #F0F2F5;
+  --muted: #8B949E;
+  --red: #DD0426;
+  --red2: #FF4458;
+  --sidebar-w: 240px;
 }
 
-/* Apply base light theme and layout settings */
 html, body, [data-testid="stAppViewContainer"] {
-    background-color: var(--bg-primary) !important;
-    color: var(--text-primary) !important;
-    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+  font-family: 'Inter', -apple-system, sans-serif !important;
 }
 
-/* Remove default Streamlit padding */
 .block-container {
-    padding-top: 1.5rem !important;
-    padding-bottom: 2rem !important;
-    padding-left: 2.5rem !important;
-    padding-right: 2.5rem !important;
-    max-width: 100% !important;
+  padding: 1.75rem 2.5rem 3rem calc(var(--sidebar-w) + 2.5rem) !important;
+  max-width: 100% !important;
 }
 
-/* Hide Streamlit Header, Footer, MainMenu, and Sidebar! */
-#MainMenu {visibility: hidden;}
-header {visibility: hidden;}
-footer {visibility: hidden;}
-div[data-testid="stDecoration"] {display: none;}
-div[data-testid="stToolbar"] {display: none;}
-div[data-testid="stSidebar"] {display: none !important;}
-section[data-testid="stSidebar"] {display: none !important;}
+/* Hide Streamlit chrome + its sidebar */
+#MainMenu, header, footer,
+div[data-testid="stDecoration"],
+div[data-testid="stToolbar"] { display: none !important; }
 
-/* Custom styled inputs and dropdowns */
-div[data-testid="stTextInput"] input, 
-div[data-testid="stTextArea"] textarea, 
+/* Hide Streamlit's native sidebar visually but keep buttons in DOM for JS clicks */
+section[data-testid="stSidebar"] {
+  position: fixed !important;
+  left: -9999px !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  opacity: 0 !important;
+}
+/* Also suppress the sidebar toggle arrow that Streamlit injects */
+div[data-testid="collapsedControl"] { display: none !important; }
+
+/* ── Inputs ─────────────────────────────────────────────── */
+div[data-testid="stTextInput"] input,
+div[data-testid="stTextArea"] textarea,
 div[data-testid="stNumberInput"] input,
 div[data-testid="stDateInput"] input {
-    background-color: var(--bg-secondary) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 6px !important;
-    padding: 0.5rem 0.75rem !important;
-    font-size: 0.95rem !important;
-    transition: all 0.2s ease !important;
-    font-family: 'Space Grotesk', sans-serif !important;
+  background: var(--surface2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  font-family: 'Inter', sans-serif !important;
+  transition: border-color 0.2s !important;
 }
-
-div[data-testid="stTextInput"] input:focus, 
+div[data-testid="stTextInput"] input:focus,
 div[data-testid="stTextArea"] textarea:focus,
 div[data-testid="stNumberInput"] input:focus {
-    border-color: var(--accent) !important;
-    box-shadow: 0 0 0 2px rgba(221, 4, 38, 0.2) !important;
+  border-color: var(--red) !important;
+  box-shadow: 0 0 0 3px rgba(221,4,38,0.1) !important;
+  outline: none !important;
 }
-
-/* Style Selectboxes */
 div[data-testid="stSelectbox"] > div {
-    background-color: var(--bg-secondary) !important;
-    color: var(--text-primary) !important;
-    border-color: var(--border) !important;
+  background: var(--surface2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
 }
-
-/* Style File Uploader */
 div[data-testid="stFileUploader"] {
-    background-color: var(--bg-secondary) !important;
-    border: 1px dashed var(--border) !important;
-    border-radius: 8px !important;
-    padding: 1.5rem !important;
+  background: var(--surface) !important;
+  border: 1px dashed var(--border) !important;
+  border-radius: 10px !important;
 }
 
-/* CSS Scrollbar override */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+/* ── Buttons ─────────────────────────────────────────────── */
+div[data-testid="stButton"] > button[kind="primary"] {
+  background: linear-gradient(135deg, var(--red), var(--red2)) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: opacity 0.2s, transform 0.15s !important;
 }
-::-webkit-scrollbar-track {
-    background: var(--bg-primary);
+div[data-testid="stButton"] > button[kind="primary"]:hover {
+  opacity: 0.85 !important;
+  transform: translateY(-1px) !important;
 }
-::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 4px;
+div[data-testid="stButton"] > button[kind="secondary"] {
+  background: var(--surface2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  transition: border-color 0.2s, background 0.2s !important;
 }
-::-webkit-scrollbar-thumb:hover {
-    background: var(--text-secondary);
+div[data-testid="stButton"] > button[kind="secondary"]:hover {
+  border-color: var(--red) !important;
+  background: rgba(221,4,38,0.05) !important;
 }
 
-/* Custom CSS Classes for Premium Components */
+/* ── Tabs ────────────────────────────────────────────────── */
+div[data-testid="stTabs"] [role="tab"] {
+  color: var(--muted) !important; font-weight: 500 !important;
+}
+div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
+  color: var(--text) !important;
+  border-bottom-color: var(--red) !important;
+}
 
-/* Premium Cards */
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ── Custom Sidebar ──────────────────────────────────────── */
+.cc-sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: linear-gradient(180deg, #0C0E13 0%, #0F1117 50%, #111520 100%);
+  border-right: 1px solid rgba(221,4,38,0.1);
+  box-shadow: 4px 0 40px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  z-index: 99999;
+  overflow: hidden;
+}
+
+.cc-brand {
+  padding: 1.25rem 1rem 1.125rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  cursor: default;
+  user-select: none;
+}
+.cc-logo {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, #DD0426 0%, #FF4458 100%);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+  box-shadow: 0 2px 14px rgba(221,4,38,0.45);
+}
+.cc-brand-text {
+  font-size: 0.9rem; font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.cc-nav {
+  flex: 1;
+  padding: 0.6rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-y: auto;
+}
+
+.cc-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  position: relative;
+  user-select: none;
+}
+.cc-nav-item:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+}
+.cc-nav-item.active {
+  background: linear-gradient(90deg, rgba(221,4,38,0.13) 0%, rgba(221,4,38,0.03) 100%);
+  color: var(--text);
+  font-weight: 600;
+}
+.cc-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 5px; bottom: 5px;
+  width: 3px;
+  background: linear-gradient(180deg, #DD0426, #FF4458);
+  border-radius: 0 3px 3px 0;
+}
+.cc-nav-item i, .cc-nav-item svg {
+  width: 15px; height: 15px;
+  flex-shrink: 0;
+}
+
+.cc-footer {
+  padding: 0.75rem 0.875rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.cc-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(221,4,38,0.2), rgba(221,4,38,0.05));
+  border: 1px solid rgba(221,4,38,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700;
+  color: var(--red);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.cc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.cc-user { flex: 1; min-width: 0; }
+.cc-user-name {
+  font-size: 0.78rem; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cc-user-bal { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
+.cc-signout {
+  color: var(--muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  border: none; background: transparent;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.cc-signout:hover { color: var(--red); background: rgba(221,4,38,0.08); }
+.cc-signout svg { width: 14px; height: 14px; }
+
+/* ── Cards ───────────────────────────────────────────────── */
 .premium-card {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    animation: fadeIn 0.4s ease-out forwards;
-    color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 0.875rem;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 .premium-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--accent);
-    box-shadow: 0 4px 12px rgba(221, 4, 38, 0.08);
+  border-color: var(--border-red);
+  box-shadow: 0 4px 24px rgba(221,4,38,0.05);
+  transform: translateY(-1px);
 }
 
-/* Fade In Animation */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.fade-in {
-    animation: fadeIn 0.4s ease-out forwards;
-}
-
-/* Custom Header styling */
+/* ── Page headers ────────────────────────────────────────── */
 .page-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  font-size: 1.55rem; font-weight: 800;
+  color: var(--text); letter-spacing: -0.03em;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 4px;
 }
-.page-subtitle {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
-}
+.page-subtitle { font-size: 0.875rem; color: var(--muted); margin-bottom: 1.75rem; }
 
-/* Priority Tags */
-.priority-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-.priority-high {
-    background-color: rgba(221, 4, 38, 0.1);
-    color: var(--accent);
-    border: 1px solid rgba(221, 4, 38, 0.2);
-}
-.priority-medium {
-    background-color: rgba(245, 158, 11, 0.1);
-    color: var(--warning);
-    border: 1px solid rgba(245, 158, 11, 0.2);
-}
-.priority-low {
-    background-color: rgba(16, 185, 129, 0.1);
-    color: var(--success);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-/* Category Tags */
+/* ── Badges ──────────────────────────────────────────────── */
 .category-tag {
-    background-color: var(--bg-primary);
-    color: var(--text-secondary);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+  padding: 2px 8px; border-radius: 5px;
+  font-size: 0.72rem; font-weight: 600;
+  border: 1px solid var(--border);
+}
+.priority-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 9px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 600;
 }
 
-/* Skeleton Loading Animation */
-@keyframes skeletonPulse {
-    0% { background-color: var(--bg-secondary); }
-    50% { background-color: var(--border); }
-    100% { background-color: var(--bg-secondary); }
+/* ── Metrics ─────────────────────────────────────────────── */
+.metrics-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+  gap: 0.75rem; margin-bottom: 1.5rem;
 }
-.skeleton-card {
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
+.metric-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.125rem 1.25rem;
+  display: flex; align-items: center; gap: 1rem;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.metric-box:hover { border-color: var(--border-red); transform: translateY(-1px); }
+.metric-icon-wrapper {
+  border-radius: 10px; width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.metric-value { font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1; letter-spacing: -0.03em; }
+.metric-label { font-size: 0.73rem; color: var(--muted); font-weight: 500; margin-top: 3px; }
+
+/* ── Skeleton ────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
 }
 .skeleton-bar {
-    animation: skeletonPulse 1.5s infinite ease-in-out;
-    height: 16px;
-    background-color: var(--bg-secondary);
-    border-radius: 4px;
-    margin-bottom: 10px;
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+  background-size: 1200px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 5px; height: 14px; margin-bottom: 10px;
 }
-.skeleton-title {
-    width: 60%;
-    height: 20px;
-}
-.skeleton-desc {
-    width: 90%;
-    height: 14px;
-}
-.skeleton-meta {
-    width: 35%;
-    height: 12px;
+.skeleton-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.25rem; margin-bottom: 0.875rem;
 }
 
-/* Info stats row */
-.info-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    margin-top: 6px;
-}
+/* ── Misc ────────────────────────────────────────────────── */
+.info-row { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.82rem; margin-top: 6px; }
 
-/* Event banner styling */
-.event-banner {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 6px;
-    margin-bottom: 0.75rem;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-/* Flex metrics box */
-.metrics-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.metric-box {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.metric-box:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-.metric-icon-wrapper {
-    background-color: var(--bg-primary);
-    border-radius: 8px;
-    width: 42px;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-primary);
-}
-.metric-info {
-    display: flex;
-    flex-direction: column;
-}
-.metric-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1.2;
-}
-.metric-label {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-/* Custom Sidebar Layout */
-.custom-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 100vh;
-    background-color: var(--sidebar);
-    color: var(--text-primary);
-    z-index: 999999;
-    transition: width 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-}
-
-.custom-sidebar.collapsed {
-    width: 80px;
-}
-
-/* Adjust Streamlit main container to accommodate sidebar */
-[data-testid="stAppViewContainer"] .block-container {
-    margin-left: 250px !important;
-    transition: margin-left 0.3s ease !important;
-    max-width: calc(100% - 250px) !important;
-}
-
-body.sidebar-collapsed [data-testid="stAppViewContainer"] .block-container {
-    margin-left: 80px !important;
-    max-width: calc(100% - 80px) !important;
-}
-
-.sidebar-header {
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid var(--border);
-}
-.sidebar-header h2 {
-    color: var(--text-primary);
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 700;
-    white-space: nowrap;
-    opacity: 1;
-    transition: opacity 0.2s;
-}
-.custom-sidebar.collapsed .sidebar-header h2 {
-    opacity: 0;
-    width: 0;
-    overflow: hidden;
-}
-
-.sidebar-toggle {
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border-radius: 6px;
-}
-.sidebar-toggle:hover {
-    background-color: var(--sidebar-hover);
-}
-
-.sidebar-nav {
-    flex-grow: 1;
-    padding: 1.5rem 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    overflow-y: auto;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 1.5rem;
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-.nav-item:hover {
-    background-color: var(--sidebar-hover);
-    color: var(--text-primary);
-}
-.nav-item.active {
-    background-color: var(--accent);
-    color: var(--text-primary);
-    border-right: 4px solid #ffffff;
-}
-.custom-sidebar.collapsed .nav-text {
-    display: none;
-}
-.custom-sidebar.collapsed .nav-item {
-    justify-content: center;
-    padding: 10px 0;
-}
-
-.sidebar-footer {
-    padding: 1.5rem;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.custom-sidebar.collapsed .sidebar-footer {
-    justify-content: center;
-    padding: 1.5rem 0;
-}
-.custom-sidebar.collapsed .footer-info {
-    display: none;
-}
+.fade-in { animation: fadeUp 0.35s ease-out forwards; }
 
 @media (max-width: 768px) {
-    .custom-sidebar { width: 60px !important; }
-    .custom-sidebar .nav-text, .custom-sidebar .sidebar-header h2, .custom-sidebar .footer-info { display: none !important; }
-    .custom-sidebar .nav-item { justify-content: center !important; padding: 10px 0 !important; }
-    .custom-sidebar .sidebar-footer { justify-content: center !important; padding: 1.5rem 0 !important; }
-    [data-testid="stAppViewContainer"] .block-container { margin-left: 60px !important; max-width: calc(100% - 60px) !important; padding-top: 50px !important;}
+  :root { --sidebar-w: 54px; }
+  .cc-brand-text, .cc-nav-item span, .cc-user, .cc-signout { display: none; }
+  .cc-nav-item { justify-content: center; padding: 10px; }
+  .cc-brand { justify-content: center; padding: 1rem 0.5rem; }
+  .cc-footer { justify-content: center; }
+  .block-container { padding-left: calc(var(--sidebar-w) + 1rem) !important; padding-right: 1rem !important; }
 }
-
 </style>
 """
 
-# Global JS Keyboard Shortcut Listener (focus search input on '/' or 'Ctrl+K')
 GLOBAL_JS = """
 <script>
 document.addEventListener('keydown', function(e) {
-    if (e.key === '/' || (e.ctrlKey && e.key === 'k') || (e.metaKey && e.key === 'k')) {
-        // Find input inside the top search bar (styled with custom placeholder text)
-        const inputs = parent.document.querySelectorAll('input');
-        for (let input of inputs) {
-            if (input.placeholder.toLowerCase().includes('search')) {
-                e.preventDefault();
-                input.focus();
-                break;
-            }
-        }
+  if (e.key === '/' || (e.ctrlKey && e.key === 'k') || (e.metaKey && e.key === 'k')) {
+    const inputs = document.querySelectorAll('input[placeholder]');
+    for (let inp of inputs) {
+      if (inp.placeholder.toLowerCase().includes('search')) {
+        e.preventDefault(); inp.focus(); break;
+      }
     }
+  }
 });
 </script>
 """
 
 
 def inject_custom_styles():
-    """
-    Injects custom styles and keyboard shortcut scripts into the Streamlit app.
-    """
     st.markdown(GLOBAL_CSS, unsafe_allow_html=True)
     st.markdown(GLOBAL_JS, unsafe_allow_html=True)
     st.markdown(LUCIDE_CDN, unsafe_allow_html=True)
 
 
 def page_header(title: str, subtitle: str, icon: str = "home"):
-    """
-    Renders a premium header with matching subtitle and a Lucide icon.
-    """
     st.markdown(f"""
 <div class="fade-in">
-<div class="page-title">
-<i data-lucide="{icon}" style="color: #3B82F6; width: 28px; height: 28px;"></i>
-{title}
-</div>
-<div class="page-subtitle">{subtitle}</div>
-</div>
-""", unsafe_allow_html=True)
+  <div class="page-title">
+    <i data-lucide="{icon}" style="color:#DD0426;width:24px;height:24px;flex-shrink:0;"></i>
+    {title}
+  </div>
+  <div class="page-subtitle">{subtitle}</div>
+</div>""", unsafe_allow_html=True)
     st.markdown(LUCIDE_CDN, unsafe_allow_html=True)
 
 
 def render_kpis(tomatos_val: int, deliveries_val: int, events_val: int, saved_val: int):
-    """
-    Renders the dashboard KPIs in a clean, modern grid.
-    """
-    html = f"""
+    st.markdown(f"""
 <div class="metrics-container fade-in">
-<div class="metric-box">
-<div class="metric-icon-wrapper" style="color: #22C55E; background-color: rgba(34, 197, 94, 0.1);">
-<i data-lucide="wallet"></i>
-</div>
-<div class="metric-info">
-<span class="metric-value">{tomatos_val}</span>
-<span class="metric-label">Tomatos Balance</span>
-</div>
-</div>
-<div class="metric-box">
-<div class="metric-icon-wrapper" style="color: #3B82F6; background-color: rgba(59, 130, 246, 0.1);">
-<i data-lucide="package"></i>
-</div>
-<div class="metric-info">
-<span class="metric-value">{deliveries_val}</span>
-<span class="metric-label">Logistics Requests</span>
-</div>
-</div>
-<div class="metric-box">
-<div class="metric-icon-wrapper" style="color: #A855F7; background-color: rgba(168, 85, 247, 0.1);">
-<i data-lucide="calendar"></i>
-</div>
-<div class="metric-info">
-<span class="metric-value">{events_val}</span>
-<span class="metric-label">Registered Events</span>
-</div>
-</div>
-<div class="metric-box">
-<div class="metric-icon-wrapper" style="color: #EAB308; background-color: rgba(234, 179, 8, 0.1);">
-<i data-lucide="bookmark"></i>
-</div>
-<div class="metric-info">
-<span class="metric-value">{saved_val}</span>
-<span class="metric-label">Saved Announcements</span>
-</div>
-</div>
-</div>
-"""
-    html = html.replace('\n\n', '\n'); html = html.replace('\n    \n', '\n'); st.markdown(html, unsafe_allow_html=True)
+  <div class="metric-box">
+    <div class="metric-icon-wrapper" style="background:rgba(34,197,94,0.1);color:#22C55E;">
+      <i data-lucide="wallet" style="width:18px;height:18px;"></i>
+    </div>
+    <div><div class="metric-value">{tomatos_val}</div><div class="metric-label">Tomato Balance</div></div>
+  </div>
+  <div class="metric-box">
+    <div class="metric-icon-wrapper" style="background:rgba(59,130,246,0.1);color:#3B82F6;">
+      <i data-lucide="package" style="width:18px;height:18px;"></i>
+    </div>
+    <div><div class="metric-value">{deliveries_val}</div><div class="metric-label">Logistics Requests</div></div>
+  </div>
+  <div class="metric-box">
+    <div class="metric-icon-wrapper" style="background:rgba(168,85,247,0.1);color:#A855F7;">
+      <i data-lucide="calendar" style="width:18px;height:18px;"></i>
+    </div>
+    <div><div class="metric-value">{events_val}</div><div class="metric-label">Registered Events</div></div>
+  </div>
+  <div class="metric-box">
+    <div class="metric-icon-wrapper" style="background:rgba(234,179,8,0.1);color:#EAB308;">
+      <i data-lucide="bookmark" style="width:18px;height:18px;"></i>
+    </div>
+    <div><div class="metric-value">{saved_val}</div><div class="metric-label">Saved Announcements</div></div>
+  </div>
+</div>""", unsafe_allow_html=True)
     st.markdown(LUCIDE_CDN, unsafe_allow_html=True)
 
 
 def render_timeline(status: str):
-    """
-    Renders a premium horizontal timeline tracking parcel logistics progress.
-    """
     steps = ["Created", "Accepted", "Picked Up", "Delivered"]
+    icons = ["file-plus", "handshake", "package", "check-circle"]
     try:
-        current_idx = steps.index(status)
+        idx = steps.index(status)
     except ValueError:
-        current_idx = 0
-        
-    html = '<div class="premium-card fade-in" style="margin-bottom: 1.5rem;">'
-    html += '<h4 style="margin-top: 0; margin-bottom: 1rem; color: var(--text-primary); font-size: 1rem; display: flex; align-items: center; gap: 8px;"><i data-lucide="truck" style="width: 18px; color: #3B82F6;"></i> Active Delivery Progress</h4>'
-    html += '<div style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 10px 0; overflow-x: auto;">'
-    
-    # Draw horizontal bar background
-    html += '<div style="position: absolute; left: 10%; right: 10%; top: 26px; height: 3px; background-color: #2D3748; z-index: 1;"></div>'
-    
-    # Draw progress fill
-    progress_width = (current_idx / (len(steps) - 1)) * 80
-    html += f'<div style="position: absolute; left: 10%; width: {progress_width}%; top: 26px; height: 3px; background-color: #22C55E; z-index: 2; transition: width 0.3s ease;"></div>'
-    
-    for i, step in enumerate(steps):
-        is_active = i <= current_idx
-        is_current = i == current_idx
-        
-        # Color definitions
-        circle_bg = "#22C55E" if is_active else "#161B22"
-        circle_border = "#22C55E" if is_active else "#2D3748"
-        icon_color = "#FFFFFF" if is_active else "#94A3B8"
-        text_color = "#FFFFFF" if is_active else "#94A3B8"
-        font_weight = "600" if is_current else "500"
-        
-        # Select icon for each stage
-        icons = ["file-plus", "handshake", "package", "check-circle"]
-        
-        html += f"""<div style="display: flex; flex-direction: column; align-items: center; width: 20%; z-index: 3; text-align: center;">
-<div style="width: 32px; height: 32px; border-radius: 50%; background-color: {circle_bg}; border: 2px solid {circle_border}; display: flex; align-items: center; justify-content: center; color: {icon_color}; margin-bottom: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
-<i data-lucide="{icons[i]}" style="width: 14px; height: 14px;"></i>
-</div>
-<span style="font-size: 0.8rem; color: {text_color}; font-weight: {font_weight};">{step}</span>
+        idx = 0
+
+    progress = (idx / (len(steps) - 1)) * 80
+    circles = ""
+    for i, (step, icon) in enumerate(zip(steps, icons)):
+        active = i <= idx
+        bg = "linear-gradient(135deg,#DD0426,#FF4458)" if active else "var(--surface2)"
+        border = "#DD0426" if active else "rgba(255,255,255,0.07)"
+        text_c = "var(--text)" if active else "var(--muted)"
+        weight = "700" if i == idx else "500"
+        shadow = "0 0 12px rgba(221,4,38,0.4)" if active else "none"
+        circles += f"""<div style="display:flex;flex-direction:column;align-items:center;width:25%;z-index:3;text-align:center;">
+  <div style="width:32px;height:32px;border-radius:50%;background:{bg};border:2px solid {border};
+              display:flex;align-items:center;justify-content:center;color:#fff;margin-bottom:7px;box-shadow:{shadow};">
+    <i data-lucide="{icon}" style="width:14px;height:14px;"></i>
+  </div>
+  <span style="font-size:0.76rem;color:{text_c};font-weight:{weight};">{step}</span>
 </div>"""
-        
-    html += '</div></div>'
-    html = html.replace('\n\n', '\n'); html = html.replace('\n    \n', '\n'); st.markdown(html, unsafe_allow_html=True)
+
+    st.markdown(f"""
+<div class="premium-card" style="margin-bottom:1.5rem;">
+  <div style="font-size:0.82rem;font-weight:600;color:var(--muted);margin-bottom:1rem;
+              display:flex;align-items:center;gap:7px;">
+    <i data-lucide="truck" style="width:14px;height:14px;color:#DD0426;"></i> Delivery Progress
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative;padding:8px 0;">
+    <div style="position:absolute;left:12.5%;right:12.5%;top:22px;height:2px;background:rgba(255,255,255,0.06);z-index:1;"></div>
+    <div style="position:absolute;left:12.5%;width:{progress}%;top:22px;height:2px;
+                background:linear-gradient(90deg,#DD0426,#FF4458);z-index:2;transition:width 0.4s;"></div>
+    {circles}
+  </div>
+</div>""", unsafe_allow_html=True)
     st.markdown(LUCIDE_CDN, unsafe_allow_html=True)
 
 
 def render_empty_state(title: str, description: str, icon: str = "inbox"):
-    """
-    Renders an elegant dark placeholder for empty data lists.
-    """
     st.markdown(f"""
-<div class="premium-card fade-in" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1.5rem; text-align: center; border-style: dashed;">
-<div style="background-color: rgba(45, 55, 72, 0.3); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); margin-bottom: 1rem; border: 1px solid var(--border);">
-<i data-lucide="{icon}" style="width: 30px; height: 30px;"></i>
-</div>
-<h4 style="margin: 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 600;">{title}</h4>
-<p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem; max-width: 350px;">{description}</p>
-</div>
-""", unsafe_allow_html=True)
+<div class="premium-card fade-in" style="display:flex;flex-direction:column;align-items:center;
+     padding:3rem 1.5rem;text-align:center;border-style:dashed;">
+  <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.03);
+              border:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;
+              justify-content:center;color:var(--muted);margin-bottom:1rem;">
+    <i data-lucide="{icon}" style="width:22px;height:22px;"></i>
+  </div>
+  <div style="font-size:0.95rem;font-weight:600;color:var(--text);margin-bottom:6px;">{title}</div>
+  <div style="font-size:0.82rem;color:var(--muted);max-width:300px;line-height:1.55;">{description}</div>
+</div>""", unsafe_allow_html=True)
     st.markdown(LUCIDE_CDN, unsafe_allow_html=True)
 
 
 def render_skeleton_card():
-    """
-    Renders a single skeleton pulse card placeholder.
-    """
     st.markdown("""
 <div class="skeleton-card">
-<div class="skeleton-bar skeleton-title"></div>
-<div class="skeleton-bar skeleton-desc"></div>
-<div class="skeleton-bar skeleton-desc" style="width: 75%;"></div>
-<div class="skeleton-bar skeleton-meta" style="margin-top: 15px;"></div>
-</div>
-""", unsafe_allow_html=True)
+  <div class="skeleton-bar" style="width:55%;height:17px;margin-bottom:12px;"></div>
+  <div class="skeleton-bar" style="width:90%;"></div>
+  <div class="skeleton-bar" style="width:70%;"></div>
+  <div class="skeleton-bar" style="width:35%;height:11px;margin-top:14px;"></div>
+</div>""", unsafe_allow_html=True)
 
 
 def render_skeleton_grid(count: int = 3):
-    """
-    Renders a grid layout of skeleton pulse cards.
-    """
     for _ in range(count):
         render_skeleton_card()
 
 
 def safe_rerun():
-    """
-    Reruns the Streamlit application using the available rerun method.
-    """
     try:
         st.rerun()
     except AttributeError:
         st.experimental_rerun()
 
 
-
-SIDEBAR_CSS = """
-/* Custom Sidebar Layout */
-.custom-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 100vh;
-    background-color: var(--sidebar);
-    color: var(--text-primary);
-    z-index: 999999;
-    transition: width 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-}
-
-.custom-sidebar.collapsed {
-    width: 80px;
-}
-
-/* Adjust Streamlit main container to accommodate sidebar */
-[data-testid="stAppViewContainer"] .block-container {
-    margin-left: 250px !important;
-    transition: margin-left 0.3s ease !important;
-    max-width: calc(100% - 250px) !important;
-}
-
-body.sidebar-collapsed [data-testid="stAppViewContainer"] .block-container {
-    margin-left: 80px !important;
-    max-width: calc(100% - 80px) !important;
-}
-
-.sidebar-header {
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid var(--border);
-}
-.sidebar-header h2 {
-    color: var(--text-primary);
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 700;
-    white-space: nowrap;
-    opacity: 1;
-    transition: opacity 0.2s;
-}
-.custom-sidebar.collapsed .sidebar-header h2 {
-    opacity: 0;
-    width: 0;
-    overflow: hidden;
-}
-
-.sidebar-toggle {
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border-radius: 6px;
-}
-.sidebar-toggle:hover {
-    background-color: var(--sidebar-hover);
-}
-
-.sidebar-nav {
-    flex-grow: 1;
-    padding: 1.5rem 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    overflow-y: auto;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 1.5rem;
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-.nav-item:hover {
-    background-color: var(--sidebar-hover);
-    color: var(--text-primary);
-}
-.nav-item.active {
-    background-color: var(--accent);
-    color: var(--text-primary);
-    border-right: 4px solid #ffffff;
-}
-.custom-sidebar.collapsed .nav-text {
-    display: none;
-}
-.custom-sidebar.collapsed .nav-item {
-    justify-content: center;
-    padding: 10px 0;
-}
-
-.sidebar-footer {
-    padding: 1.5rem;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.custom-sidebar.collapsed .sidebar-footer {
-    justify-content: center;
-    padding: 1.5rem 0;
-}
-.custom-sidebar.collapsed .footer-info {
-    display: none;
-}
-"""
-
-SIDEBAR_JS = """
-<script>
-function toggleSidebar() {
-    const sidebar = window.parent.document.querySelector('.custom-sidebar');
-    const body = window.parent.document.body;
-    if (sidebar) {
-        sidebar.classList.toggle('collapsed');
-        body.classList.toggle('sidebar-collapsed');
-    }
-}
-
-// Inject sidebar directly into the parent document body so it breaks out of the iframe
-document.addEventListener("DOMContentLoaded", function() {
-    setTimeout(function() {
-        const parentBody = window.parent.document.body;
-        const mySidebar = document.getElementById("campus-custom-sidebar");
-        
-        if (mySidebar && !window.parent.document.getElementById("campus-custom-sidebar")) {
-            parentBody.appendChild(mySidebar);
-        }
-    }, 500);
-});
-</script>
-"""
+def _nav_js(label: str) -> str:
+    """JS that finds a hidden Streamlit sidebar button by textContent and clicks it."""
+    # Use textContent (not innerText) — innerText returns "" for display:none elements
+    return (
+        f"(function(){{"
+        f"var btns=document.querySelectorAll('section[data-testid=\"stSidebar\"] button');"
+        f"for(var i=0;i<btns.length;i++){{"
+        f"if(btns[i].textContent.trim()==='{label}'){{btns[i].click();return;}}"
+        f"}}"
+        f"}})();"
+    )
 
 
-def render_custom_sidebar(user, current_page):
+def render_custom_sidebar(user: dict, current_page: str):
     nav_items = [
-        {"name": "Dashboard", "icon": "home"},
-        {"name": "Events", "icon": "calendar"},
-        {"name": "Announcements", "icon": "megaphone"},
-        {"name": "Resources", "icon": "folder-open"},
-        {"name": "Logistics", "icon": "truck"},
-        {"name": "Lost & Found", "icon": "package"},
-        {"name": "Profile", "icon": "user"}
+        ("Dashboard",     "home"),
+        ("Events",        "calendar"),
+        ("Announcements", "megaphone"),
+        ("Resources",     "folder-open"),
+        ("Logistics",     "truck"),
+        ("Lost & Found",  "package-search"),
+        ("Profile",       "user"),
     ]
-    
-    with st.sidebar:
-        if st.button("HID_NAV_SignOut", key="nav_btn_signout"):
-            st.session_state.current_page = "SignOut"
-            try:
-                st.experimental_set_query_params(page="SignOut")
-            except:
-                pass
-            safe_rerun()
-    html = f"""
-<style>{SIDEBAR_CSS}
-@media (max-width: 768px) {{
-    .custom-sidebar {{ width: 60px !important; }}
-    .custom-sidebar .nav-text, .custom-sidebar .sidebar-header h2, .custom-sidebar .footer-info {{ display: none !important; }}
-    .custom-sidebar .nav-item {{ justify-content: center !important; padding: 10px 0 !important; }}
-    .custom-sidebar .sidebar-footer {{ justify-content: center !important; padding: 1.5rem 0 !important; }}
-    [data-testid="stAppViewContainer"] .block-container {{ margin-left: 60px !important; max-width: calc(100% - 60px) !important; padding-top: 50px !important;}}
-}}
-</style>
-{SIDEBAR_JS}
 
-<div id="campus-custom-sidebar" class="custom-sidebar">
-<div class="sidebar-header">
-<button class="sidebar-toggle" onclick="toggleSidebar()">
-<i data-lucide="menu"></i>
-</button>
-<h2>CampusConnect</h2>
-</div>
-
-<div class="sidebar-nav">
-"""
-    
-    # Create hidden native Streamlit buttons in the sidebar for routing without hard reloads
+    # ── Hidden Streamlit sidebar buttons (real navigation) ──
     with st.sidebar:
-        for item in nav_items:
-            if st.button(f"HID_NAV_{item['name']}", key=f"nav_btn_{item['name']}"):
-                st.session_state.current_page = item["name"]
+        for name, _ in nav_items:
+            if st.button(f"NAV:{name}", key=f"_nav_{name}"):
                 try:
-                    st.experimental_set_query_params(page=item["name"])
-                except:
-                    pass
+                    st.query_params["page"] = name
+                except AttributeError:
+                    try:
+                        st.experimental_set_query_params(page=name)
+                    except Exception:
+                        pass
                 safe_rerun()
+        if st.button("NAV:SignOut", key="_nav_signout"):
+            from auth import logout
+            logout()
+            try:
+                st.query_params.clear()
+            except Exception:
+                try:
+                    st.experimental_set_query_params()
+                except Exception:
+                    pass
+            safe_rerun()
 
-    for item in nav_items:
-        active_class = "active" if current_page == item["name"] else ""
-        
-        # We use JS to find the hidden Streamlit button by its text and invoke a click
-        click_js = f"const btns = window.parent.document.querySelectorAll('.stButton button'); btns.forEach(b => {{ if(b.innerText.includes('HID_NAV_{item['name']}')) b.click(); }});"
-        
-        html += f"""<a style="cursor: pointer;" onclick="{click_js}" class="nav-item {active_class}">
-<i data-lucide="{item['icon']}"></i>
-<span class="nav-text">{item['name']}</span>
-</a>"""
-        
-    html += f"""</div>
-<div class="sidebar-footer">
-<img src="{user['avatar_url']}" style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--bg-secondary); border: 1px solid var(--border);" />
-<div class="footer-info" style="overflow: hidden; flex-grow: 1;">
-<div style="font-weight: 600; color: var(--text-primary); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{user['name']}</div>
-<div style="font-size: 0.75rem; color: var(--success); font-weight: 500;">{user.get('tomatos', 0)} Tomatoes</div>
+    # ── Visual sidebar HTML ──────────────────────────────────
+    balance = user.get("tomatos", user.get("tomato_balance", 0))
+    initials = "".join(w[0].upper() for w in user.get("name", "?").split()[:2])
+    avatar_url = user.get("avatar_url") or ""
+    avatar_inner = (
+        f'<img src="{avatar_url}" alt="" style="width:100%;height:100%;object-fit:cover;">'
+        if avatar_url else f"<span>{initials}</span>"
+    )
+
+    nav_html = ""
+    for name, icon in nav_items:
+        active = "active" if current_page == name else ""
+        js = _nav_js(f"NAV:{name}")
+        nav_html += (
+            f'<div class="cc-nav-item {active}" onclick="{js}">'
+            f'<i data-lucide="{icon}"></i><span>{name}</span>'
+            f'</div>'
+        )
+
+    signout_js = _nav_js("NAV:SignOut")
+
+    st.markdown(f"""
+<div class="cc-sidebar">
+  <div class="cc-brand">
+    <div class="cc-logo">🍅</div>
+    <span class="cc-brand-text">CampusConnect</span>
+  </div>
+  <div class="cc-nav">
+    {nav_html}
+  </div>
+  <div class="cc-footer">
+    <div class="cc-avatar">{avatar_inner}</div>
+    <div class="cc-user">
+      <div class="cc-user-name">{user.get('name', '')}</div>
+      <div class="cc-user-bal">{balance} 🍅</div>
+    </div>
+    <button class="cc-signout" onclick="{signout_js}" title="Sign out">
+      <i data-lucide="log-out"></i>
+    </button>
+  </div>
 </div>
-
-<a style="cursor: pointer;" onclick="const btns = window.parent.document.querySelectorAll('.stButton button'); btns.forEach(b => {{ if(b.innerText.includes('HID_NAV_SignOut')) b.click(); }});" class="nav-text" style="color: var(--text-secondary); margin-left: auto;">
-
-<i data-lucide="log-out" style="width: 18px;"></i>
-</a>
-</div>
-</div>"""
-    
-    html = html.replace('\n\n', '\n'); html = html.replace('\n    \n', '\n'); st.markdown(html, unsafe_allow_html=True)
-    st.markdown(LUCIDE_CDN, unsafe_allow_html=True)
+{LUCIDE_CDN}""", unsafe_allow_html=True)

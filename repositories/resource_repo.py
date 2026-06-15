@@ -56,8 +56,8 @@ def increment_downloads(resource_id: str) -> bool:
         resource = get_resource_by_id(resource_id)
         if not resource:
             return False
-        current = resource.get("download_count", 0)
-        client.table("resources").update({"download_count": current + 1}).eq("id", resource_id).execute()
+        current = resource.get("downloads_count", 0)
+        client.table("resources").update({"downloads_count": current + 1}).eq("id", resource_id).execute()
         st.cache_data.clear()
         return True
     except Exception as e:
@@ -71,8 +71,8 @@ def increment_bookmarks(resource_id: str) -> bool:
         resource = get_resource_by_id(resource_id)
         if not resource:
             return False
-        current = resource.get("bookmark_count", 0)
-        client.table("resources").update({"bookmark_count": current + 1}).eq("id", resource_id).execute()
+        current = resource.get("bookmarks_count", 0)
+        client.table("resources").update({"bookmarks_count": current + 1}).eq("id", resource_id).execute()
         st.cache_data.clear()
         return True
     except Exception as e:
@@ -86,9 +86,9 @@ def decrement_bookmarks(resource_id: str) -> bool:
         resource = get_resource_by_id(resource_id)
         if not resource:
             return False
-        current = resource.get("bookmark_count", 0)
+        current = resource.get("bookmarks_count", 0)
         new_count = max(0, current - 1)
-        client.table("resources").update({"bookmark_count": new_count}).eq("id", resource_id).execute()
+        client.table("resources").update({"bookmarks_count": new_count}).eq("id", resource_id).execute()
         st.cache_data.clear()
         return True
     except Exception as e:

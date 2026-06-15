@@ -131,7 +131,7 @@ def render(user: dict) -> None:
     sec_col1, sec_col2 = st.columns([8, 2])
     with sec_col1:
         st.markdown(
-            '<h3 style="margin: 0.25rem 0 0.75rem 0; color:#FFFFFF; font-size:1.2rem; '
+            '<h3 style="margin: 0.25rem 0 0.75rem 0; color:var(--text); font-size:1.2rem; '
             'display:flex; align-items:center; gap:8px;">'
             '<i data-lucide="sparkles" style="color:#A855F7; width:20px;"></i> Upcoming Events</h3>',
             unsafe_allow_html=True
@@ -168,22 +168,22 @@ def render(user: dict) -> None:
     </div>
   </div>
   <div style="padding:1rem; flex-grow:1; display:flex; flex-direction:column; gap:6px;">
-    <h5 style="margin:0; color:#FFFFFF; font-size:0.95rem; font-weight:700;
+    <h5 style="margin:0; color:var(--text); font-size:0.95rem; font-weight:700;
                white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{event['title']}</h5>
-    <div style="font-size:0.78rem; color:#94A3B8; display:flex; align-items:center; gap:5px;">
+    <div style="font-size:0.78rem; color:var(--muted); display:flex; align-items:center; gap:5px;">
       <i data-lucide="calendar" style="width:12px;"></i> {formatted_date}
     </div>
-    <div style="font-size:0.78rem; color:#94A3B8; display:flex; align-items:center; gap:5px;
+    <div style="font-size:0.78rem; color:var(--muted); display:flex; align-items:center; gap:5px;
                 white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
       <i data-lucide="map-pin" style="width:12px;"></i> {event['venue']}
     </div>
     <div style="margin-top:6px;">
       <div style="display:flex; justify-content:space-between; font-size:0.7rem;
-                  color:#94A3B8; margin-bottom:3px;">
+                  color:var(--muted); margin-bottom:3px;">
         <span>{event['registered_count']} / {event['capacity']}</span>
         <span>{fill_pct}%</span>
       </div>
-      <div style="background:#2D3748; height:4px; border-radius:2px;">
+      <div style="background:var(--border); height:4px; border-radius:2px;">
         <div style="background:{bar_color}; width:{fill_pct}%; height:100%; border-radius:2px;"></div>
       </div>
     </div>
@@ -223,7 +223,7 @@ def render(user: dict) -> None:
         hdr_l1, hdr_l2 = st.columns([7, 3])
         with hdr_l1:
             st.markdown(
-                '<h3 style="margin:0 0 0.75rem 0; color:#FFFFFF; font-size:1.1rem; '
+                '<h3 style="margin:0 0 0.75rem 0; color:var(--text); font-size:1.1rem; '
                 'display:flex; align-items:center; gap:8px;">'
                 '<i data-lucide="calendar-check-2" style="color:#22C55E; width:18px;"></i> '
                 'My Registered Events</h3>',
@@ -245,9 +245,9 @@ def render(user: dict) -> None:
     <img src="{event['banner_url']}"
          style="width:56px; height:44px; object-fit:cover; border-radius:6px; flex-shrink:0;" />
     <div style="overflow:hidden; flex-grow:1;">
-      <h5 style="margin:0 0 3px 0; color:#FFFFFF; font-size:0.9rem; font-weight:700;
+      <h5 style="margin:0 0 3px 0; color:var(--text); font-size:0.9rem; font-weight:700;
                  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{event['title']}</h5>
-      <div style="font-size:0.75rem; color:#94A3B8; display:flex; gap:10px; flex-wrap:wrap;">
+      <div style="font-size:0.75rem; color:var(--muted); display:flex; gap:10px; flex-wrap:wrap;">
         <span><i data-lucide="clock" style="width:11px;"></i> {formatted_date} @ {event['time']}</span>
         <span><i data-lucide="map-pin" style="width:11px;"></i> {event['venue']}</span>
       </div>
@@ -270,7 +270,7 @@ def render(user: dict) -> None:
         hdr_r1, hdr_r2 = st.columns([7, 3])
         with hdr_r1:
             st.markdown(
-                '<h3 style="margin:0 0 0.75rem 0; color:#FFFFFF; font-size:1.1rem; '
+                '<h3 style="margin:0 0 0.75rem 0; color:var(--text); font-size:1.1rem; '
                 'display:flex; align-items:center; gap:8px;">'
                 '<i data-lucide="megaphone" style="color:#EAB308; width:18px;"></i> '
                 'Recent Announcements</h3>',
@@ -313,9 +313,9 @@ def render(user: dict) -> None:
     </span>
     <span class="category-tag" style="font-size:0.65rem;">{ann.get('category','General')}</span>
   </div>
-  <h5 style="margin:0 0 4px 0; color:#FFFFFF; font-size:0.9rem; font-weight:700;">{ann['title']}</h5>
-  <p style="margin:0; color:#94A3B8; font-size:0.8rem; line-height:1.4;">{content_preview}</p>
-  <div style="margin-top:8px; font-size:0.72rem; color:#4B5563; display:flex; gap:10px;">
+  <h5 style="margin:0 0 4px 0; color:var(--text); font-size:0.9rem; font-weight:700;">{ann['title']}</h5>
+  <p style="margin:0; color:var(--muted); font-size:0.8rem; line-height:1.4;">{content_preview}</p>
+  <div style="margin-top:8px; font-size:0.72rem; color:var(--muted); display:flex; gap:10px;">
     <span>By {ann.get('author_name', ann.get('author', ''))}</span>
     <span>{str(ann.get('created_at',''))[:10]}</span>
   </div>
@@ -337,7 +337,7 @@ def render(user: dict) -> None:
     pr_hdr1, pr_hdr2 = st.columns([8, 2])
     with pr_hdr1:
         st.markdown(
-            '<h3 style="margin:0 0 0.75rem 0; color:#FFFFFF; font-size:1.1rem; '
+            '<h3 style="margin:0 0 0.75rem 0; color:var(--text); font-size:1.1rem; '
             'display:flex; align-items:center; gap:8px;">'
             '<i data-lucide="package" style="color:#3B82F6; width:18px;"></i> '
             'Recent Parcel Requests</h3>',
@@ -368,7 +368,7 @@ def render(user: dict) -> None:
                 st.markdown(f"""
 <div class="premium-card" style="padding:0.9rem; margin-bottom:0.5rem;">
   <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:6px;">
-    <h5 style="margin:0; color:#FFFFFF; font-size:0.9rem; font-weight:700;
+    <h5 style="margin:0; color:var(--text); font-size:0.9rem; font-weight:700;
                white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70%;">
       {req['title']}
     </h5>
@@ -376,10 +376,10 @@ def render(user: dict) -> None:
                  border-radius:9999px; font-size:0.65rem; font-weight:600;
                  padding:2px 8px; flex-shrink:0; white-space:nowrap;">{status}</span>
   </div>
-  <div style="font-size:0.78rem; color:#94A3B8; display:flex; flex-direction:column; gap:3px;">
+  <div style="font-size:0.78rem; color:var(--muted); display:flex; flex-direction:column; gap:3px;">
     <span><i data-lucide="arrow-right" style="width:11px;"></i>
       {req.get('pickup_location','—')} &rarr; {req.get('delivery_location','—')}</span>
-    <span style="font-size:0.7rem; color:#4B5563;">{req.get('created_at','')[:10]}</span>
+    <span style="font-size:0.7rem; color:var(--muted);">{req.get('created_at','')[:10]}</span>
   </div>
 </div>
 """, unsafe_allow_html=True)

@@ -5,7 +5,7 @@ st.set_page_config(
     page_title="CampusConnect",
     page_icon="🎓",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 import services
@@ -81,7 +81,7 @@ if not user:
     <i data-lucide="graduation-cap" style="width:40px;height:40px;color:#DD0426;"></i>
     CampusConnect
   </h1>
-  <p style="color:#9197AE;margin-top:8px;font-size:1rem;">
+  <p style="color:var(--muted);margin-top:8px;font-size:1rem;">
     The all-in-one campus activity portal.
   </p>
 </div>""",

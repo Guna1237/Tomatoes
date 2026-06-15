@@ -28,7 +28,7 @@ def _status_badge(status: str) -> str:
         "Claimed": ("#FB923C", "rgba(251,146,60,0.1)", "rgba(251,146,60,0.25)"),
         "Resolved": ("#22C55E", "rgba(34,197,94,0.1)", "rgba(34,197,94,0.25)"),
     }
-    c, bg, border = colors.get(status, ("#9197AE", "rgba(145,151,174,0.1)", "rgba(145,151,174,0.2)"))
+    c, bg, border = colors.get(status, ("#64748B", "rgba(100,116,139,0.08)", "rgba(100,116,139,0.15)"))
     return (
         f'<span style="background:{bg};border:1px solid {border};color:{c};'
         f'border-radius:20px;padding:2px 10px;font-size:0.75rem;font-weight:600;">{status}</span>'
@@ -173,14 +173,14 @@ def render(user: dict) -> None:
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
     <div>
       <span class="category-tag">{item.get('category','')}</span>
-      <h4 style="margin:6px 0 0 0;color:#EFF6EE;font-size:1rem;font-weight:600;">{item.get('title','')}</h4>
+      <h4 style="margin:6px 0 0 0;color:var(--text);font-size:1rem;font-weight:600;">{item.get('title','')}</h4>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
       {_type_badge(item.get('item_type','Lost'))}
       {_status_badge(status)}
     </div>
   </div>
-  <p style="margin:0 0 10px 0;color:#9197AE;font-size:0.875rem;line-height:1.5;
+  <p style="margin:0 0 10px 0;color:var(--muted);font-size:0.875rem;line-height:1.5;
      max-height:60px;overflow:hidden;text-overflow:ellipsis;">
     {item.get('description','')}
   </p>

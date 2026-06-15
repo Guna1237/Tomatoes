@@ -7,13 +7,13 @@ GLOBAL_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --bg: #0A0C10;
-  --surface: #111318;
-  --surface2: #161B23;
-  --border: rgba(255,255,255,0.07);
-  --border-red: rgba(221,4,38,0.25);
-  --text: #F0F2F5;
-  --muted: #8B949E;
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface2: #F1F5F9;
+  --border: #E2E8F0;
+  --border-red: rgba(221,4,38,0.18);
+  --text: #0F172A;
+  --muted: #64748B;
   --red: #DD0426;
   --red2: #FF4458;
   --sidebar-w: 240px;
@@ -43,7 +43,6 @@ section[data-testid="stSidebar"] {
   min-width: 0 !important;
   opacity: 0 !important;
 }
-/* Also suppress the sidebar toggle arrow that Streamlit injects */
 div[data-testid="collapsedControl"] { display: none !important; }
 
 /* ── Inputs ─────────────────────────────────────────────── */
@@ -51,7 +50,7 @@ div[data-testid="stTextInput"] input,
 div[data-testid="stTextArea"] textarea,
 div[data-testid="stNumberInput"] input,
 div[data-testid="stDateInput"] input {
-  background: var(--surface2) !important;
+  background: #FFFFFF !important;
   color: var(--text) !important;
   border: 1px solid var(--border) !important;
   border-radius: 8px !important;
@@ -62,16 +61,16 @@ div[data-testid="stTextInput"] input:focus,
 div[data-testid="stTextArea"] textarea:focus,
 div[data-testid="stNumberInput"] input:focus {
   border-color: var(--red) !important;
-  box-shadow: 0 0 0 3px rgba(221,4,38,0.1) !important;
+  box-shadow: 0 0 0 3px rgba(221,4,38,0.08) !important;
   outline: none !important;
 }
 div[data-testid="stSelectbox"] > div {
-  background: var(--surface2) !important;
+  background: #FFFFFF !important;
   color: var(--text) !important;
   border-color: var(--border) !important;
 }
 div[data-testid="stFileUploader"] {
-  background: var(--surface) !important;
+  background: var(--surface2) !important;
   border: 1px dashed var(--border) !important;
   border-radius: 10px !important;
 }
@@ -90,7 +89,7 @@ div[data-testid="stButton"] > button[kind="primary"]:hover {
   transform: translateY(-1px) !important;
 }
 div[data-testid="stButton"] > button[kind="secondary"] {
-  background: var(--surface2) !important;
+  background: #FFFFFF !important;
   color: var(--text) !important;
   border: 1px solid var(--border) !important;
   border-radius: 8px !important;
@@ -99,7 +98,7 @@ div[data-testid="stButton"] > button[kind="secondary"] {
 }
 div[data-testid="stButton"] > button[kind="secondary"]:hover {
   border-color: var(--red) !important;
-  background: rgba(221,4,38,0.05) !important;
+  background: rgba(221,4,38,0.04) !important;
 }
 
 /* ── Tabs ────────────────────────────────────────────────── */
@@ -114,8 +113,8 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
 /* ── Scrollbar ───────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.18); }
 
 /* ── Custom Sidebar ──────────────────────────────────────── */
 .cc-sidebar {
@@ -123,9 +122,9 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   top: 0; left: 0;
   width: var(--sidebar-w);
   height: 100vh;
-  background: linear-gradient(180deg, #0C0E13 0%, #0F1117 50%, #111520 100%);
-  border-right: 1px solid rgba(221,4,38,0.1);
-  box-shadow: 4px 0 40px rgba(0,0,0,0.6);
+  background: #FFFFFF;
+  border-right: 1px solid #E2E8F0;
+  box-shadow: 2px 0 24px rgba(0,0,0,0.06);
   display: flex;
   flex-direction: column;
   z-index: 99999;
@@ -137,7 +136,7 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   display: flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid #E2E8F0;
   cursor: default;
   user-select: none;
 }
@@ -147,11 +146,11 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   font-size: 14px; flex-shrink: 0;
-  box-shadow: 0 2px 14px rgba(221,4,38,0.45);
+  box-shadow: 0 2px 10px rgba(221,4,38,0.25);
 }
 .cc-brand-text {
   font-size: 0.9rem; font-weight: 700;
-  color: var(--text);
+  color: #0F172A;
   letter-spacing: -0.02em;
 }
 
@@ -170,7 +169,7 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   gap: 9px;
   padding: 9px 10px;
   border-radius: 8px;
-  color: var(--muted);
+  color: #64748B;
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -180,12 +179,12 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   user-select: none;
 }
 .cc-nav-item:hover {
-  background: rgba(255,255,255,0.04);
-  color: var(--text);
+  background: #F1F5F9;
+  color: #0F172A;
 }
 .cc-nav-item.active {
-  background: linear-gradient(90deg, rgba(221,4,38,0.13) 0%, rgba(221,4,38,0.03) 100%);
-  color: var(--text);
+  background: #FEF2F4;
+  color: #DD0426;
   font-weight: 600;
 }
 .cc-nav-item.active::before {
@@ -203,7 +202,7 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
 
 .cc-footer {
   padding: 0.75rem 0.875rem;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid #E2E8F0;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -211,23 +210,23 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
 .cc-avatar {
   width: 30px; height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(221,4,38,0.2), rgba(221,4,38,0.05));
-  border: 1px solid rgba(221,4,38,0.25);
+  background: rgba(221,4,38,0.08);
+  border: 1px solid rgba(221,4,38,0.2);
   display: flex; align-items: center; justify-content: center;
   font-size: 0.7rem; font-weight: 700;
-  color: var(--red);
+  color: #DD0426;
   flex-shrink: 0;
   overflow: hidden;
 }
 .cc-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .cc-user { flex: 1; min-width: 0; }
 .cc-user-name {
-  font-size: 0.78rem; font-weight: 600; color: var(--text);
+  font-size: 0.78rem; font-weight: 600; color: #0F172A;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.cc-user-bal { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
+.cc-user-bal { font-size: 0.68rem; color: #64748B; margin-top: 1px; }
 .cc-signout {
-  color: var(--muted);
+  color: #94A3B8;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   width: 26px; height: 26px;
@@ -236,21 +235,22 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   transition: color 0.15s, background 0.15s;
   flex-shrink: 0;
 }
-.cc-signout:hover { color: var(--red); background: rgba(221,4,38,0.08); }
+.cc-signout:hover { color: var(--red); background: rgba(221,4,38,0.06); }
 .cc-signout svg { width: 14px; height: 14px; }
 
 /* ── Cards ───────────────────────────────────────────────── */
 .premium-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 12px;
   padding: 1.25rem;
   margin-bottom: 0.875rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 .premium-card:hover {
-  border-color: var(--border-red);
-  box-shadow: 0 4px 24px rgba(221,4,38,0.05);
+  border-color: rgba(221,4,38,0.18);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
   transform: translateY(-1px);
 }
 
@@ -265,7 +265,7 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
 
 /* ── Badges ──────────────────────────────────────────────── */
 .category-tag {
-  background: rgba(255,255,255,0.04);
+  background: var(--surface2);
   color: var(--muted);
   padding: 2px 8px; border-radius: 5px;
   font-size: 0.72rem; font-weight: 600;
@@ -284,14 +284,15 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   gap: 0.75rem; margin-bottom: 1.5rem;
 }
 .metric-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 12px;
   padding: 1.125rem 1.25rem;
   display: flex; align-items: center; gap: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   transition: border-color 0.2s, transform 0.2s;
 }
-.metric-box:hover { border-color: var(--border-red); transform: translateY(-1px); }
+.metric-box:hover { border-color: rgba(221,4,38,0.18); transform: translateY(-1px); }
 .metric-icon-wrapper {
   border-radius: 10px; width: 40px; height: 40px;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
@@ -305,13 +306,13 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   100% { background-position: 600px 0; }
 }
 .skeleton-bar {
-  background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
   background-size: 1200px 100%;
   animation: shimmer 1.4s infinite linear;
   border-radius: 5px; height: 14px; margin-bottom: 10px;
 }
 .skeleton-card {
-  background: var(--surface); border: 1px solid var(--border);
+  background: #FFFFFF; border: 1px solid #E2E8F0;
   border-radius: 12px; padding: 1.25rem; margin-bottom: 0.875rem;
 }
 
@@ -413,13 +414,14 @@ def render_timeline(status: str):
     for i, (step, icon) in enumerate(zip(steps, icons)):
         active = i <= idx
         bg = "linear-gradient(135deg,#DD0426,#FF4458)" if active else "var(--surface2)"
-        border = "#DD0426" if active else "rgba(255,255,255,0.07)"
+        border = "#DD0426" if active else "var(--border)"
+        icon_color = "#fff" if active else "var(--muted)"
         text_c = "var(--text)" if active else "var(--muted)"
         weight = "700" if i == idx else "500"
         shadow = "0 0 12px rgba(221,4,38,0.4)" if active else "none"
         circles += f"""<div style="display:flex;flex-direction:column;align-items:center;width:25%;z-index:3;text-align:center;">
   <div style="width:32px;height:32px;border-radius:50%;background:{bg};border:2px solid {border};
-              display:flex;align-items:center;justify-content:center;color:#fff;margin-bottom:7px;box-shadow:{shadow};">
+              display:flex;align-items:center;justify-content:center;color:{icon_color};margin-bottom:7px;box-shadow:{shadow};">
     <i data-lucide="{icon}" style="width:14px;height:14px;"></i>
   </div>
   <span style="font-size:0.76rem;color:{text_c};font-weight:{weight};">{step}</span>
@@ -432,7 +434,7 @@ def render_timeline(status: str):
     <i data-lucide="truck" style="width:14px;height:14px;color:#DD0426;"></i> Delivery Progress
   </div>
   <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative;padding:8px 0;">
-    <div style="position:absolute;left:12.5%;right:12.5%;top:22px;height:2px;background:rgba(255,255,255,0.06);z-index:1;"></div>
+    <div style="position:absolute;left:12.5%;right:12.5%;top:22px;height:2px;background:var(--border);z-index:1;"></div>
     <div style="position:absolute;left:12.5%;width:{progress}%;top:22px;height:2px;
                 background:linear-gradient(90deg,#DD0426,#FF4458);z-index:2;transition:width 0.4s;"></div>
     {circles}
@@ -445,8 +447,8 @@ def render_empty_state(title: str, description: str, icon: str = "inbox"):
     st.markdown(f"""
 <div class="premium-card fade-in" style="display:flex;flex-direction:column;align-items:center;
      padding:3rem 1.5rem;text-align:center;border-style:dashed;">
-  <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.03);
-              border:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;
+  <div style="width:48px;height:48px;border-radius:50%;background:rgba(0,0,0,0.03);
+              border:1px solid var(--border);display:flex;align-items:center;
               justify-content:center;color:var(--muted);margin-bottom:1rem;">
     <i data-lucide="{icon}" style="width:22px;height:22px;"></i>
   </div>
@@ -480,10 +482,9 @@ def safe_rerun():
 
 def _nav_js(label: str) -> str:
     """JS that finds a hidden Streamlit sidebar button by textContent and clicks it."""
-    # Use textContent (not innerText) — innerText returns "" for display:none elements
     return (
         f"(function(){{"
-        f"var btns=document.querySelectorAll('section[data-testid=\"stSidebar\"] button');"
+        f"var btns=document.querySelectorAll('button');"
         f"for(var i=0;i<btns.length;i++){{"
         f"if(btns[i].textContent.trim()==='{label}'){{btns[i].click();return;}}"
         f"}}"

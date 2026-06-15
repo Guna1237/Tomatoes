@@ -35,8 +35,8 @@ def _txn_row(t: dict) -> None:
 <div class="premium-card" style="padding:0.75rem 1rem;margin-bottom:0.4rem;display:flex;
      justify-content:space-between;align-items:center;background:{bg};border-color:{border};">
   <div>
-    <span style="font-weight:600;color:#EFF6EE;font-size:0.875rem;">{t.get('description','')}</span>
-    <div style="font-size:0.72rem;color:#9197AE;margin-top:2px;">
+    <span style="font-weight:600;color:var(--text);font-size:0.875rem;">{t.get('description','')}</span>
+    <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">
       {str(t.get('created_at',''))[:10]}
     </div>
   </div>
@@ -130,18 +130,18 @@ def render(user: dict) -> None:
         st.markdown(
             f"""
 <div style="text-align:center;">
-  <h3 style="margin:0;color:#EFF6EE;font-size:1.25rem;font-weight:700;">{user.get('name','')}</h3>
+  <h3 style="margin:0;color:var(--text);font-size:1.25rem;font-weight:700;">{user.get('name','')}</h3>
   <div style="margin:6px 0;">
     <span style="background:rgba(221,4,38,0.12);border:1px solid rgba(221,4,38,0.3);color:#DD0426;
           border-radius:20px;padding:2px 12px;font-size:0.75rem;font-weight:600;">{role_label}</span>
   </div>
-  <div style="color:#9197AE;font-size:0.82rem;margin:6px 0;">{user.get('email','')}</div>
-  <div style="color:#9197AE;font-size:0.78rem;">Member since {member_since}</div>
+  <div style="color:var(--muted);font-size:0.82rem;margin:6px 0;">{user.get('email','')}</div>
+  <div style="color:var(--muted);font-size:0.78rem;">Member since {member_since}</div>
   <div style="margin-top:12px;display:inline-flex;align-items:center;gap:8px;
        background:rgba(240,45,58,0.08);border:1px solid rgba(240,45,58,0.2);
        border-radius:10px;padding:6px 14px;">
-    <span style="font-size:1.1rem;font-weight:700;color:#EFF6EE;">{tomatos}</span>
-    <span style="font-size:0.75rem;color:#9197AE;font-weight:500;">🍅 Tomato Credits</span>
+    <span style="font-size:1.1rem;font-weight:700;color:var(--text);">{tomatos}</span>
+    <span style="font-size:0.75rem;color:var(--muted);font-weight:500;">🍅 Tomato Credits</span>
   </div>
 </div>""",
             unsafe_allow_html=True,
@@ -194,8 +194,8 @@ def render(user: dict) -> None:
   <div style="color:{color};margin-bottom:6px;">
     <i data-lucide="{icon}" style="width:22px;height:22px;"></i>
   </div>
-  <div style="font-size:1.75rem;font-weight:700;color:#EFF6EE;line-height:1;">{val}</div>
-  <div style="font-size:0.75rem;color:#9197AE;margin-top:4px;font-weight:500;">{label}</div>
+  <div style="font-size:1.75rem;font-weight:700;color:var(--text);line-height:1;">{val}</div>
+  <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;font-weight:500;">{label}</div>
 </div>""",
                     unsafe_allow_html=True,
                 )
@@ -206,8 +206,8 @@ def render(user: dict) -> None:
             unread_count = len([n for n in notifications if not n.get("read")])
             with ctrl1:
                 st.markdown(
-                    f"<h4 style='color:#EFF6EE;margin:0;'>"
-                    f"Notifications <span style='color:#9197AE;font-size:0.875rem;font-weight:400;'>"
+                    f"<h4 style='color:var(--text);margin:0;'>"
+                    f"Notifications <span style='color:var(--muted);font-size:0.875rem;font-weight:400;'>"
                     f"({unread_count} unread)</span></h4>",
                     unsafe_allow_html=True,
                 )
@@ -236,7 +236,7 @@ def render(user: dict) -> None:
                 for notif in notifications:
                     is_unread = not notif.get("read", False)
                     bg = "rgba(221,4,38,0.04)" if is_unread else "transparent"
-                    border = "rgba(221,4,38,0.15)" if is_unread else "rgba(145,151,174,0.08)"
+                    border = "rgba(221,4,38,0.15)" if is_unread else "var(--border)"
                     dot = (
                         '<span style="display:inline-block;width:7px;height:7px;background:#DD0426;'
                         'border-radius:50%;margin-right:6px;vertical-align:middle;flex-shrink:0;"></span>'
@@ -254,9 +254,9 @@ def render(user: dict) -> None:
                         "resource": "#3B82F6",
                         "announcement": "#EAB308",
                         "lost_found": "#22C55E",
-                        "general": "#9197AE",
+                        "general": "#64748B",
                     }
-                    badge_color = type_colors.get(notif_type, "#9197AE")
+                    badge_color = type_colors.get(notif_type, "#64748B")
 
                     st.markdown(
                         f"""
@@ -264,11 +264,11 @@ def render(user: dict) -> None:
      background:{bg};border-color:{border};">
   <div style="display:flex;align-items:flex-start;gap:0.5rem;">
     <div style="flex:1;min-width:0;">
-      <div style="font-weight:600;color:#EFF6EE;font-size:0.875rem;display:flex;align-items:center;">
+      <div style="font-weight:600;color:var(--text);font-size:0.875rem;display:flex;align-items:center;">
         {dot}{notif.get('title','')}
       </div>
-      <div style="font-size:0.8125rem;color:#9197AE;margin-top:3px;line-height:1.4;">{content_preview}</div>
-      <div style="font-size:0.72rem;color:rgba(145,151,174,0.6);margin-top:5px;">
+      <div style="font-size:0.8125rem;color:var(--muted);margin-top:3px;line-height:1.4;">{content_preview}</div>
+      <div style="font-size:0.72rem;color:rgba(100,116,139,0.6);margin-top:5px;">
         {_time_ago(notif.get('created_at',''))}
       </div>
     </div>
@@ -302,8 +302,8 @@ def render(user: dict) -> None:
 
             if transactions:
                 st.markdown(
-                    f"<p style='color:#9197AE;font-size:0.875rem;margin-bottom:1rem;'>"
-                    f"Current balance: <strong style='color:#EFF6EE;'>{tomatos} 🍅</strong></p>",
+                    f"<p style='color:var(--muted);font-size:0.875rem;margin-bottom:1rem;'>"
+                    f"Current balance: <strong style='color:var(--text);'>{tomatos} 🍅</strong></p>",
                     unsafe_allow_html=True,
                 )
                 for t in transactions:

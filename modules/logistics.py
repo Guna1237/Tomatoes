@@ -17,13 +17,13 @@ def _tomato_badge(amount: int) -> str:
 
 def _status_badge(status: str) -> str:
     colors = {
-        "Created": ("#9197AE", "rgba(145,151,174,0.1)", "rgba(145,151,174,0.2)"),
+        "Created": ("#64748B", "rgba(100,116,139,0.08)", "rgba(100,116,139,0.15)"),
         "Accepted": ("#3B82F6", "rgba(59,130,246,0.1)", "rgba(59,130,246,0.25)"),
         "Picked Up": ("#FB923C", "rgba(251,146,60,0.1)", "rgba(251,146,60,0.25)"),
         "Delivered": ("#22C55E", "rgba(34,197,94,0.1)", "rgba(34,197,94,0.25)"),
         "Cancelled": ("#EF4444", "rgba(239,68,68,0.1)", "rgba(239,68,68,0.25)"),
     }
-    c, bg, border = colors.get(status, ("#9197AE", "rgba(145,151,174,0.1)", "rgba(145,151,174,0.2)"))
+    c, bg, border = colors.get(status, ("#64748B", "rgba(100,116,139,0.08)", "rgba(100,116,139,0.15)"))
     return (
         f'<span style="background:{bg};border:1px solid {border};color:{c};'
         f'border-radius:20px;padding:2px 10px;font-size:0.75rem;font-weight:600;">{status}</span>'
@@ -41,8 +41,8 @@ def _txn_row(t: dict) -> None:
 <div class="premium-card" style="padding:0.8rem;margin-bottom:0.4rem;display:flex;
      justify-content:space-between;align-items:center;background:{bg};border-color:{border};">
   <div>
-    <span style="font-weight:600;color:#EFF6EE;font-size:0.9rem;">{t.get('description','')}</span>
-    <div style="font-size:0.72rem;color:#9197AE;margin-top:2px;">
+    <span style="font-weight:600;color:var(--text);font-size:0.9rem;">{t.get('description','')}</span>
+    <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">
       {str(t.get('created_at',''))[:10]} {str(t.get('created_at',''))[11:16]}
     </div>
   </div>
@@ -77,11 +77,11 @@ def render(user: dict) -> None:
 <div class="premium-card" style="border-left:4px solid #DD0426;padding:1rem 1.25rem;
      display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
   <div>
-    <div style="font-size:1.5rem;font-weight:700;color:#EFF6EE;display:flex;align-items:center;gap:10px;">
+    <div style="font-size:1.5rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;">
       <i data-lucide="wallet" style="width:22px;color:#DD0426;"></i>
-      {tomatos} <span style="font-size:1rem;color:#9197AE;font-weight:500;">Tomato Credits</span>
+      {tomatos} <span style="font-size:1rem;color:var(--muted);font-weight:500;">Tomato Credits</span>
     </div>
-    <div style="font-size:0.8rem;color:#9197AE;margin-top:4px;">
+    <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">
       Creating a request deducts credits · Completing a delivery earns credits
     </div>
   </div>
@@ -116,23 +116,23 @@ def render(user: dict) -> None:
                     f"""
 <div class="premium-card">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-    <h4 style="margin:0;color:#EFF6EE;font-size:1.05rem;">{req.get('title','')}</h4>
+    <h4 style="margin:0;color:var(--text);font-size:1.05rem;">{req.get('title','')}</h4>
     {_tomato_badge(tomatoes_offered)}
   </div>
-  <p style="margin:0 0 10px 0;color:#9197AE;font-size:0.875rem;line-height:1.5;">
+  <p style="margin:0 0 10px 0;color:var(--muted);font-size:0.875rem;line-height:1.5;">
     {req.get('description','')}
   </p>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;
-       background:rgba(26,32,51,0.6);border-radius:8px;padding:10px;border:1px solid rgba(145,151,174,0.08);">
+       background:var(--surface2);border-radius:8px;padding:10px;border:1px solid var(--border);">
     <div>
-      <div style="font-size:0.7rem;color:#9197AE;text-transform:uppercase;font-weight:600;margin-bottom:3px;">Pickup</div>
-      <div style="color:#EFF6EE;font-size:0.875rem;display:flex;align-items:center;gap:4px;">
+      <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px;">Pickup</div>
+      <div style="color:var(--text);font-size:0.875rem;display:flex;align-items:center;gap:4px;">
         <i data-lucide="map-pin" style="width:12px;"></i> {req.get('pickup_location','')}
       </div>
     </div>
     <div>
-      <div style="font-size:0.7rem;color:#9197AE;text-transform:uppercase;font-weight:600;margin-bottom:3px;">Delivery</div>
-      <div style="color:#EFF6EE;font-size:0.875rem;display:flex;align-items:center;gap:4px;">
+      <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px;">Delivery</div>
+      <div style="color:var(--text);font-size:0.875rem;display:flex;align-items:center;gap:4px;">
         <i data-lucide="navigation" style="width:12px;"></i> {req.get('delivery_location','')}
       </div>
     </div>
@@ -176,10 +176,10 @@ def render(user: dict) -> None:
                     f"""
 <div class="premium-card">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-    <h4 style="margin:0;color:#EFF6EE;font-size:1.05rem;">{req.get('title','')}</h4>
+    <h4 style="margin:0;color:var(--text);font-size:1.05rem;">{req.get('title','')}</h4>
     {_status_badge(status)}
   </div>
-  <p style="margin:0 0 8px 0;color:#9197AE;font-size:0.875rem;">{req.get('description','')}</p>
+  <p style="margin:0 0 8px 0;color:var(--muted);font-size:0.875rem;">{req.get('description','')}</p>
   <div class="info-row" style="font-size:0.8rem;flex-wrap:wrap;gap:8px;">
     <span>{helper_text}</span>
     <span>· Pickup: <strong>{req.get('pickup_location','')}</strong></span>
@@ -217,7 +217,7 @@ def render(user: dict) -> None:
                     f"""
 <div class="premium-card">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-    <h4 style="margin:0;color:#EFF6EE;font-size:1.05rem;">{req.get('title','')}</h4>
+    <h4 style="margin:0;color:var(--text);font-size:1.05rem;">{req.get('title','')}</h4>
     {_status_badge(status)}
   </div>
   <div class="info-row" style="font-size:0.8rem;flex-wrap:wrap;gap:8px;">
@@ -266,12 +266,12 @@ def render(user: dict) -> None:
     # ── Tab 4: Create Request ────────────────────────────────────────────────
     with tab_create:
         st.markdown(
-            "<h3 style='margin-top:0;color:#EFF6EE;font-size:1.15rem;'>Create Delivery Request</h3>",
+            "<h3 style='margin-top:0;color:var(--text);font-size:1.15rem;'>Create Delivery Request</h3>",
             unsafe_allow_html=True,
         )
         st.markdown(
-            f"<p style='color:#9197AE;font-size:0.875rem;'>Your current balance: "
-            f"<strong style='color:#EFF6EE;'>{tomatos} 🍅</strong></p>",
+            f"<p style='color:var(--muted);font-size:0.875rem;'>Your current balance: "
+            f"<strong style='color:var(--text);'>{tomatos} 🍅</strong></p>",
             unsafe_allow_html=True,
         )
 
@@ -334,15 +334,15 @@ def render(user: dict) -> None:
 
         if transactions:
             st.markdown(
-                "<h4 style='color:#EFF6EE;margin-top:0;'>Transaction History</h4>",
+                "<h4 style='color:var(--text);margin-top:0;'>Transaction History</h4>",
                 unsafe_allow_html=True,
             )
             running = 0
             for t in reversed(transactions):
                 running += t.get("amount", 0)
             st.markdown(
-                f"<p style='color:#9197AE;font-size:0.85rem;margin-bottom:1rem;'>"
-                f"Running balance: <strong style='color:#EFF6EE;'>{tomatos} 🍅</strong></p>",
+                f"<p style='color:var(--muted);font-size:0.85rem;margin-bottom:1rem;'>"
+                f"Running balance: <strong style='color:var(--text);'>{tomatos} 🍅</strong></p>",
                 unsafe_allow_html=True,
             )
             for t in transactions:

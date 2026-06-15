@@ -28,7 +28,7 @@ def _resource_card(col, res: dict, tab_prefix: str, user_id: str) -> None:
       <i data-lucide="{icon}" style="width:18px;height:18px;"></i>
     </div>
     <div style="overflow:hidden;">
-      <h4 style="margin:0;color:#EFF6EE;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+      <h4 style="margin:0;color:var(--text);font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
         {res['title']}
       </h4>
       <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">
@@ -41,7 +41,7 @@ def _resource_card(col, res: dict, tab_prefix: str, user_id: str) -> None:
     <span>by <strong>{res.get('uploader_name','')}</strong></span>
     <span>{str(res.get('created_at',''))[:10]}</span>
   </div>
-  <div style="font-size:0.78rem;color:#9197AE;margin-top:6px;">
+  <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">
     <i data-lucide="bookmark" style="width:12px;display:inline-block;vertical-align:middle;"></i>
     {res.get('bookmarks_count', 0)} bookmarks
   </div>
@@ -171,7 +171,7 @@ def render(user: dict) -> None:
     # ── Tab 3: Upload Resource ───────────────────────────────────────────────
     with tab_upload:
         st.markdown(
-            "<h3 style='margin-top:0;color:#EFF6EE;font-size:1.15rem;'>Share Academic Material</h3>",
+            "<h3 style='margin-top:0;color:var(--text);font-size:1.15rem;'>Share Academic Material</h3>",
             unsafe_allow_html=True,
         )
 

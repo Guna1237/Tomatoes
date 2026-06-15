@@ -33,16 +33,25 @@ def get_event_by_id(event_id: str) -> Optional[dict]:
 
 
 def create_event(data: dict) -> dict:
-    client = get_client()
-    result = client.table("events").insert(data).execute()
-    return result.data[0] if result.data else {}
+    try:
+        client = get_client()
+        result = client.table("events").insert(data).execute()
+        st.cache_data.clear()
+        return result.data[0] if result.data else {}
+    except Exception as e:
+        print(f"[event_repo] create_event error: {e}")
+        raise
 
 
 def update_event(event_id: str, data: dict) -> dict:
-    client = get_client()
-    result = client.table("events").update(data).eq("id", event_id).execute()
-    st.cache_data.clear()
-    return result.data[0] if result.data else {}
+    try:
+        client = get_client()
+        result = client.table("events").update(data).eq("id", event_id).execute()
+        st.cache_data.clear()
+        return result.data[0] if result.data else {}
+    except Exception as e:
+        print(f"[event_repo] update_event error: {e}")
+        raise
 
 
 def delete_event(event_id: str) -> bool:

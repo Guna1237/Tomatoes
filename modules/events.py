@@ -80,14 +80,14 @@ def render(user: dict):
 </div>
 </div>
 <div style="padding: 1.25rem; flex-grow: 1; display: flex; flex-direction: column;">
-<h4 style="margin: 0 0 6px 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700;">{event['title']}</h4>
-<p style="margin: 0; color: var(--accent); font-size: 0.85rem; font-weight: 600; margin-bottom: 12px;">{formatted_date} @ {event['time']}</p>
-<div style="margin-bottom: 16px; font-size: 0.85rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px;">
+<h4 style="margin: 0 0 6px 0; color: var(--text); font-size: 1.1rem; font-weight: 700;">{event['title']}</h4>
+<p style="margin: 0; color: var(--red); font-size: 0.85rem; font-weight: 600; margin-bottom: 12px;">{formatted_date} @ {event['time']}</p>
+<div style="margin-bottom: 16px; font-size: 0.85rem; color: var(--muted); display: flex; flex-direction: column; gap: 6px;">
 <div style="display: flex; align-items: flex-start; gap: 8px;">
 <i data-lucide="map-pin" style="width: 14px; margin-top: 2px;"></i>
 <div>
-<div style="font-weight: 500; color: var(--text-primary);">{event['venue']}</div>
-<div style="color: var(--accent); font-size: 0.75rem; cursor: pointer;">Show map</div>
+<div style="font-weight: 500; color: var(--text);">{event['venue']}</div>
+<div style="color: var(--red); font-size: 0.75rem; cursor: pointer;">Show map</div>
 </div>
 </div>
 <div style="display: flex; align-items: center; gap: 8px;">
@@ -96,11 +96,11 @@ def render(user: dict):
 </div>
 </div>
 <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border);">
-<div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px;">
+<div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-bottom: 4px;">
 <span>{event['registered_count']} / {event['capacity']} Registration</span>
 </div>
 <div style="background-color: var(--border); height: 4px; border-radius: 2px;">
-<div style="background-color: var(--accent); width: {fill_pct}%; height: 100%; border-radius: 2px;"></div>
+<div style="background-color: var(--red); width: {fill_pct}%; height: 100%; border-radius: 2px;"></div>
 </div>
 </div>
 </div>
@@ -149,7 +149,7 @@ def render(user: dict):
                     st.session_state.cal_year -= 1
                 ui_components.safe_rerun()
         with nav_col2:
-            st.markdown(f"<h3 style='text-align: center; margin: 0; color: #FFFFFF;'>{calendar.month_name[m]} {y}</h3>", unsafe_allow_html=True)
+            st.markdown(f"<h3 style='text-align: center; margin: 0; color: var(--text);'>{calendar.month_name[m]} {y}</h3>", unsafe_allow_html=True)
         with nav_col3:
             if st.button("Next →", key="cal_next"):
                 st.session_state.cal_month += 1
@@ -166,7 +166,7 @@ def render(user: dict):
         # Render weekday titles
         wk_cols = st.columns(7)
         for i, wk in enumerate(weekdays):
-            wk_cols[i].markdown(f"<div style='text-align: center; color: #94A3B8; font-weight: 600; font-size: 0.85rem; padding-bottom: 8px;'>{wk}</div>", unsafe_allow_html=True)
+            wk_cols[i].markdown(f"<div style='text-align: center; color: var(--muted); font-weight: 600; font-size: 0.85rem; padding-bottom: 8px;'>{wk}</div>", unsafe_allow_html=True)
             
         # Compile events by day for current month/year
         events_by_day = {}
@@ -206,7 +206,7 @@ def render(user: dict):
                         
         # Display events for selected day
         sel_day = st.session_state.selected_day
-        st.markdown(f"<h4 style='margin-top: 1.5rem; color: #FFFFFF;'>Events on {calendar.month_name[m]} {sel_day}, {y}:</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='margin-top: 1.5rem; color: var(--text);'>Events on {calendar.month_name[m]} {sel_day}, {y}:</h4>", unsafe_allow_html=True)
         selected_events = events_by_day.get(sel_day, [])
         if selected_events:
             for event in selected_events:
@@ -216,14 +216,14 @@ def render(user: dict):
 <div class="premium-card" style="padding: 1rem;">
 <div style="display: flex; justify-content: space-between; align-items: start;">
 <div>
-<h5 style="margin: 0; font-size: 1rem; color: #FFFFFF;">{event['title']}{status_chip}</h5>
-<span style="font-size: 0.8rem; color: #94A3B8;">Organizer: {event['organizer_name']} | Time: {event['time']} | Venue: {event['venue']}</span>
+<h5 style="margin: 0; font-size: 1rem; color: var(--text);">{event['title']}{status_chip}</h5>
+<span style="font-size: 0.8rem; color: var(--muted);">Organizer: {event['organizer_name']} | Time: {event['time']} | Venue: {event['venue']}</span>
 </div>
 </div>
 </div>
 """, unsafe_allow_html=True)
         else:
-            st.markdown(f"<div style='color: #94A3B8; font-size: 0.9rem;'>No events scheduled for this day.</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='color: var(--muted); font-size: 0.9rem;'>No events scheduled for this day.</div>", unsafe_allow_html=True)
 
     # --- Tab 3: My Schedule ---
     with tab_my_events:
@@ -237,8 +237,8 @@ def render(user: dict):
 <div class="premium-card">
 <div style="display: flex; justify-content: space-between; align-items: center;">
 <div>
-<h4 style="margin: 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700;">{event['title']}</h4>
-<p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 0.85rem;">
+<h4 style="margin: 0; color: var(--text); font-size: 1.1rem; font-weight: 700;">{event['title']}</h4>
+<p style="margin: 4px 0 0 0; color: var(--muted); font-size: 0.85rem;">
 <i data-lucide="calendar" style="width: 12px; height: 12px; display: inline-block;"></i> {formatted_date} @ {event['time']} &nbsp;|&nbsp;
 <i data-lucide="map-pin" style="width: 12px; height: 12px; display: inline-block;"></i> {event['venue']}
 </p>
@@ -310,7 +310,7 @@ def render(user: dict):
 <div class="premium-card" style="text-align: center; padding: 2rem;">
 <div style="color: #A855F7; margin-bottom: 1rem;"><i data-lucide="shield-alert" style="width: 48px; height: 48px;"></i></div>
 <h4 style="margin: 0 0 6px 0; color: #FFFFFF;">Club Access Required</h4>
-<p style="margin: 0; color: #94A3B8; font-size: 0.9rem;">
+<p style="margin: 0; color: var(--muted); font-size: 0.9rem;">
 Only verified student clubs or university admin offices can host events.
 If you represent an official student organization, you can change your profile role to <strong>Club Admin</strong> in the Profile tab to test this functionality.
 </p>

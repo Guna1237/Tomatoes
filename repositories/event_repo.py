@@ -1,5 +1,6 @@
 import streamlit as st
 from database import get_client
+import local_database
 from typing import Optional
 from datetime import date
 
@@ -13,10 +14,20 @@ def get_events(upcoming_only: bool = False) -> list:
             today = date.today().isoformat()
             query = query.gte("date", today)
         result = query.execute()
-        return result.data or []
+        if result.data:
+            return result.data
+        rows = local_database.all_rows("events", lambda e: e.get("is_active", True))
+        if upcoming_only:
+            today = date.today().isoformat()
+            rows = [row for row in rows if str(row.get("date", "")) >= today]
+        return sorted(rows, key=lambda e: e.get("date", ""))
     except Exception as e:
         print(f"[event_repo] get_events error: {e}")
-        return []
+        rows = local_database.all_rows("events", lambda e: e.get("is_active", True))
+        if upcoming_only:
+            today = date.today().isoformat()
+            rows = [row for row in rows if str(row.get("date", "")) >= today]
+        return sorted(rows, key=lambda e: e.get("date", ""))
 
 
 @st.cache_data(ttl=300)
@@ -26,10 +37,10 @@ def get_event_by_id(event_id: str) -> Optional[dict]:
         result = client.table("events").select("*").eq("id", event_id).execute()
         if result.data:
             return result.data[0]
-        return None
+        return local_database.one("events", lambda e: e.get("id") == event_id)
     except Exception as e:
         print(f"[event_repo] get_event_by_id error: {e}")
-        return None
+        return local_database.one("events", lambda e: e.get("id") == event_id)
 
 
 def create_event(data: dict) -> dict:
@@ -40,7 +51,7 @@ def create_event(data: dict) -> dict:
         return result.data[0] if result.data else {}
     except Exception as e:
         print(f"[event_repo] create_event error: {e}")
-        raise
+        return local_database.insert("events", data)
 
 
 def update_event(event_id: str, data: dict) -> dict:
@@ -51,7 +62,7 @@ def update_event(event_id: str, data: dict) -> dict:
         return result.data[0] if result.data else {}
     except Exception as e:
         print(f"[event_repo] update_event error: {e}")
-        raise
+        return local_database.update("events", event_id, data)
 
 
 def delete_event(event_id: str) -> bool:
@@ -62,7 +73,7 @@ def delete_event(event_id: str) -> bool:
         return True
     except Exception as e:
         print(f"[event_repo] delete_event error: {e}")
-        return False
+        return bool(local_database.update("events", event_id, {"is_active": False}))
 
 
 def increment_registered_count(event_id: str) -> bool:
@@ -77,7 +88,7 @@ def increment_registered_count(event_id: str) -> bool:
         return True
     except Exception as e:
         print(f"[event_repo] increment_registered_count error: {e}")
-        return False
+        return local_database.set_count("events", event_id, "registered_count", 1)
 
 
 def decrement_registered_count(event_id: str) -> bool:
@@ -93,7 +104,7 @@ def decrement_registered_count(event_id: str) -> bool:
         return True
     except Exception as e:
         print(f"[event_repo] decrement_registered_count error: {e}")
-        return False
+        return local_database.set_count("events", event_id, "registered_count", -1)
 
 
 @st.cache_data(ttl=300)
@@ -101,10 +112,10 @@ def get_registrations_for_event(event_id: str) -> list:
     try:
         client = get_client()
         result = client.table("event_registrations").select("*").eq("event_id", event_id).execute()
-        return result.data or []
+        return result.data or local_database.all_rows("event_registrations", lambda r: r.get("event_id") == event_id)
     except Exception as e:
         print(f"[event_repo] get_registrations_for_event error: {e}")
-        return []
+        return local_database.all_rows("event_registrations", lambda r: r.get("event_id") == event_id)
 
 
 @st.cache_data(ttl=300)
@@ -121,10 +132,26 @@ def get_user_registrations(user_id: str) -> list:
         for row in result.data or []:
             if row.get("events"):
                 events.append(row["events"])
-        return events
+        if events:
+            return events
+        regs = local_database.all_rows("event_registrations", lambda r: r.get("user_id") == user_id)
+        return [
+            event for event in (
+                local_database.one("events", lambda e, event_id=reg.get("event_id"): e.get("id") == event_id)
+                for reg in regs
+            )
+            if event
+        ]
     except Exception as e:
         print(f"[event_repo] get_user_registrations error: {e}")
-        return []
+        regs = local_database.all_rows("event_registrations", lambda r: r.get("user_id") == user_id)
+        return [
+            event for event in (
+                local_database.one("events", lambda e, event_id=reg.get("event_id"): e.get("id") == event_id)
+                for reg in regs
+            )
+            if event
+        ]
 
 
 def register_user(event_id: str, user_id: str) -> bool:
@@ -136,7 +163,15 @@ def register_user(event_id: str, user_id: str) -> bool:
         return True
     except Exception as e:
         print(f"[event_repo] register_user error: {e}")
-        return False
+        exists = local_database.one(
+            "event_registrations",
+            lambda r: r.get("event_id") == event_id and r.get("user_id") == user_id,
+        )
+        if exists:
+            return True
+        local_database.insert("event_registrations", {"event_id": event_id, "user_id": user_id})
+        local_database.set_count("events", event_id, "registered_count", 1)
+        return True
 
 
 def unregister_user(event_id: str, user_id: str) -> bool:
@@ -148,7 +183,13 @@ def unregister_user(event_id: str, user_id: str) -> bool:
         return True
     except Exception as e:
         print(f"[event_repo] unregister_user error: {e}")
-        return False
+        removed = local_database.delete_where(
+            "event_registrations",
+            lambda r: r.get("event_id") == event_id and r.get("user_id") == user_id,
+        )
+        if removed:
+            local_database.set_count("events", event_id, "registered_count", -1)
+        return removed
 
 
 def is_registered(event_id: str, user_id: str) -> bool:
@@ -161,7 +202,15 @@ def is_registered(event_id: str, user_id: str) -> bool:
             .eq("user_id", user_id)
             .execute()
         )
-        return len(result.data or []) > 0
+        if result.data:
+            return True
+        return bool(local_database.one(
+            "event_registrations",
+            lambda r: r.get("event_id") == event_id and r.get("user_id") == user_id,
+        ))
     except Exception as e:
         print(f"[event_repo] is_registered error: {e}")
-        return False
+        return bool(local_database.one(
+            "event_registrations",
+            lambda r: r.get("event_id") == event_id and r.get("user_id") == user_id,
+        ))

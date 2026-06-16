@@ -1,33 +1,46 @@
 import streamlit as st
+from html import escape
+from urllib.parse import quote
 
 LUCIDE_CDN = '<script src="https://unpkg.com/lucide@latest"></script><script>setTimeout(()=>{if(window.lucide)lucide.createIcons();},150);</script>'
 
 GLOBAL_CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --bg: #F8FAFC;
+  --bg: #F6F7FB;
   --surface: #FFFFFF;
-  --surface2: #F1F5F9;
-  --border: #E2E8F0;
+  --surface2: #F3F5F8;
+  --border: #DDE3EB;
   --border-red: rgba(221,4,38,0.18);
-  --text: #0F172A;
-  --muted: #64748B;
+  --text: #111827;
+  --muted: #667085;
   --red: #DD0426;
-  --red2: #FF4458;
-  --sidebar-w: 240px;
+  --red2: #F43F5E;
+  --green: #0F9F6E;
+  --blue: #2563EB;
+  --amber: #D97706;
+  --sidebar-w: 256px;
+  --radius: 8px;
+  --shadow-sm: 0 1px 2px rgba(16,24,40,0.06);
+  --shadow-md: 0 14px 35px rgba(16,24,40,0.10);
 }
 
 html, body, [data-testid="stAppViewContainer"] {
   background-color: var(--bg) !important;
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0.78), rgba(246,247,251,0.92)),
+    radial-gradient(circle at 18% 0%, rgba(221,4,38,0.08), transparent 28%),
+    radial-gradient(circle at 100% 8%, rgba(37,99,235,0.07), transparent 25%);
+  background-attachment: fixed;
   color: var(--text) !important;
-  font-family: 'Inter', -apple-system, sans-serif !important;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
 }
 
 .block-container {
-  padding: 1.75rem 2.5rem 3rem calc(var(--sidebar-w) + 2.5rem) !important;
-  max-width: 100% !important;
+  padding: 2rem 2.25rem 3rem calc(var(--sidebar-w) + 2.25rem) !important;
+  max-width: 1440px !important;
 }
 
 /* Hide Streamlit chrome + its sidebar */
@@ -35,15 +48,77 @@ html, body, [data-testid="stAppViewContainer"] {
 div[data-testid="stDecoration"],
 div[data-testid="stToolbar"] { display: none !important; }
 
-/* Hide Streamlit's native sidebar visually but keep buttons in DOM for JS clicks */
+/* Native Streamlit sidebar is the real app menu. */
 section[data-testid="stSidebar"] {
-  position: fixed !important;
-  left: -9999px !important;
-  width: 0 !important;
-  min-width: 0 !important;
-  opacity: 0 !important;
+  display: block !important;
+  width: var(--sidebar-w) !important;
+  min-width: var(--sidebar-w) !important;
+  background: rgba(255,255,255,0.96) !important;
+  border-right: 1px solid rgba(221,227,235,0.92) !important;
+  box-shadow: 8px 0 30px rgba(16,24,40,0.07) !important;
+}
+section[data-testid="stSidebar"] > div {
+  background: transparent !important;
+  padding: 0.75rem 0.625rem !important;
+}
+section[data-testid="stSidebar"] .stButton > button {
+  justify-content: flex-start !important;
+  height: 38px !important;
+  border-radius: var(--radius) !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: var(--muted) !important;
+  font-weight: 700 !important;
+  padding: 0 11px !important;
+}
+section[data-testid="stSidebar"] .stButton > button:hover {
+  background: var(--surface2) !important;
+  border-color: rgba(17,24,39,0.06) !important;
+  color: var(--text) !important;
+}
+section[data-testid="stSidebar"] .stButton > button[kind="primary"],
+section[data-testid="stSidebar"] .stButton > button:disabled {
+  background: #FFF1F3 !important;
+  border-color: rgba(221,4,38,0.14) !important;
+  color: var(--red) !important;
+  opacity: 1 !important;
 }
 div[data-testid="collapsedControl"] { display: none !important; }
+
+/* Streamlit/BaseWeb text can inherit very pale theme colors. Keep form copy readable. */
+.stMarkdown, .stMarkdown p, .stText, p, label,
+div[data-testid="stWidgetLabel"],
+div[data-testid="stWidgetLabel"] *,
+div[data-testid="stRadio"] label,
+div[data-testid="stRadio"] label *,
+div[data-testid="stTextInput"] label,
+div[data-testid="stTextInput"] label *,
+div[data-testid="stTextArea"] label,
+div[data-testid="stTextArea"] label *,
+div[data-testid="stNumberInput"] label,
+div[data-testid="stNumberInput"] label *,
+div[data-testid="stDateInput"] label,
+div[data-testid="stDateInput"] label * {
+  color: var(--text) !important;
+  opacity: 1 !important;
+}
+
+div[data-testid="stRadio"] [role="radiogroup"] {
+  gap: 1rem !important;
+  justify-content: center !important;
+}
+
+div[data-testid="stRadio"] label {
+  background: rgba(255,255,255,0.82) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  padding: 7px 10px !important;
+}
+
+div[data-testid="stRadio"] label:has(input:checked) {
+  border-color: rgba(221,4,38,0.35) !important;
+  background: #FFF1F3 !important;
+}
 
 /* ── Inputs ─────────────────────────────────────────────── */
 div[data-testid="stTextInput"] input,
@@ -53,9 +128,16 @@ div[data-testid="stDateInput"] input {
   background: #FFFFFF !important;
   color: var(--text) !important;
   border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
-  font-family: 'Inter', sans-serif !important;
+  border-radius: var(--radius) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
   transition: border-color 0.2s !important;
+}
+div[data-testid="stTextInput"] input::placeholder,
+div[data-testid="stTextArea"] textarea::placeholder,
+div[data-testid="stNumberInput"] input::placeholder,
+div[data-testid="stDateInput"] input::placeholder {
+  color: #98A2B3 !important;
+  opacity: 1 !important;
 }
 div[data-testid="stTextInput"] input:focus,
 div[data-testid="stTextArea"] textarea:focus,
@@ -80,7 +162,7 @@ div[data-testid="stButton"] > button[kind="primary"] {
   background: linear-gradient(135deg, var(--red), var(--red2)) !important;
   color: #fff !important;
   border: none !important;
-  border-radius: 8px !important;
+  border-radius: var(--radius) !important;
   font-weight: 600 !important;
   transition: opacity 0.2s, transform 0.15s !important;
 }
@@ -92,7 +174,7 @@ div[data-testid="stButton"] > button[kind="secondary"] {
   background: #FFFFFF !important;
   color: var(--text) !important;
   border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
+  border-radius: var(--radius) !important;
   font-weight: 500 !important;
   transition: border-color 0.2s, background 0.2s !important;
 }
@@ -122,9 +204,10 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   top: 0; left: 0;
   width: var(--sidebar-w);
   height: 100vh;
-  background: #FFFFFF;
-  border-right: 1px solid #E2E8F0;
-  box-shadow: 2px 0 24px rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.96);
+  border-right: 1px solid rgba(221,227,235,0.92);
+  box-shadow: 8px 0 30px rgba(16,24,40,0.07);
+  backdrop-filter: blur(14px);
   display: flex;
   flex-direction: column;
   z-index: 99999;
@@ -136,30 +219,32 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   display: flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid #E2E8F0;
+  border-bottom: 1px solid var(--border);
   cursor: default;
   user-select: none;
 }
 .cc-logo {
-  width: 30px; height: 30px;
-  background: linear-gradient(135deg, #DD0426 0%, #FF4458 100%);
-  border-radius: 8px;
+  width: 34px; height: 34px;
+  background: #111827;
+  border-radius: var(--radius);
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; flex-shrink: 0;
-  box-shadow: 0 2px 10px rgba(221,4,38,0.25);
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 8px 18px rgba(17,24,39,0.18);
 }
+.cc-logo svg, .cc-logo i { width: 18px; height: 18px; }
 .cc-brand-text {
-  font-size: 0.9rem; font-weight: 700;
-  color: #0F172A;
-  letter-spacing: -0.02em;
+  font-size: 0.95rem; font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0;
 }
 
 .cc-nav {
   flex: 1;
-  padding: 0.6rem 0.5rem;
+  padding: 0.75rem 0.625rem;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 3px;
   overflow-y: auto;
 }
 
@@ -167,70 +252,73 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 9px 10px;
-  border-radius: 8px;
-  color: #64748B;
+  padding: 10px 11px;
+  border-radius: var(--radius);
+  color: var(--muted);
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 650;
   cursor: pointer;
   transition: all 0.15s ease;
   text-decoration: none;
   position: relative;
   user-select: none;
+  border: 1px solid transparent;
 }
 .cc-nav-item:hover {
-  background: #F1F5F9;
-  color: #0F172A;
+  background: var(--surface2);
+  color: var(--text);
+  border-color: rgba(17,24,39,0.06);
 }
 .cc-nav-item.active {
-  background: #FEF2F4;
-  color: #DD0426;
-  font-weight: 600;
+  background: #FFF1F3;
+  color: var(--red);
+  border-color: rgba(221,4,38,0.14);
+  font-weight: 800;
 }
 .cc-nav-item.active::before {
   content: '';
   position: absolute;
   left: 0; top: 5px; bottom: 5px;
   width: 3px;
-  background: linear-gradient(180deg, #DD0426, #FF4458);
+  background: linear-gradient(180deg, var(--red), var(--red2));
   border-radius: 0 3px 3px 0;
 }
 .cc-nav-item i, .cc-nav-item svg {
-  width: 15px; height: 15px;
+  width: 16px; height: 16px;
   flex-shrink: 0;
 }
 
 .cc-footer {
   padding: 0.75rem 0.875rem;
-  border-top: 1px solid #E2E8F0;
+  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 9px;
 }
 .cc-avatar {
   width: 30px; height: 30px;
-  border-radius: 50%;
-  background: rgba(221,4,38,0.08);
+  border-radius: var(--radius);
+  background: #FFF1F3;
   border: 1px solid rgba(221,4,38,0.2);
   display: flex; align-items: center; justify-content: center;
   font-size: 0.7rem; font-weight: 700;
-  color: #DD0426;
+  color: var(--red);
   flex-shrink: 0;
   overflow: hidden;
 }
 .cc-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .cc-user { flex: 1; min-width: 0; }
 .cc-user-name {
-  font-size: 0.78rem; font-weight: 600; color: #0F172A;
+  font-size: 0.78rem; font-weight: 800; color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.cc-user-bal { font-size: 0.68rem; color: #64748B; margin-top: 1px; }
+.cc-user-bal { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
 .cc-signout {
   color: #94A3B8;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   width: 26px; height: 26px;
-  border-radius: 6px;
+  border-radius: var(--radius);
   border: none; background: transparent;
   transition: color 0.15s, background 0.15s;
   flex-shrink: 0;
@@ -241,23 +329,23 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
 /* ── Cards ───────────────────────────────────────────────── */
 .premium-card {
   background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 1.25rem;
   margin-bottom: 0.875rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-sm);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 .premium-card:hover {
   border-color: rgba(221,4,38,0.18);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 24px rgba(16,24,40,0.08);
   transform: translateY(-1px);
 }
 
 /* ── Page headers ────────────────────────────────────────── */
 .page-title {
   font-size: 1.55rem; font-weight: 800;
-  color: var(--text); letter-spacing: -0.03em;
+  color: var(--text); letter-spacing: 0;
   display: flex; align-items: center; gap: 10px;
   margin-bottom: 4px;
 }
@@ -285,20 +373,74 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
 }
 .metric-box {
   background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 1.125rem 1.25rem;
   display: flex; align-items: center; gap: 1rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-sm);
   transition: border-color 0.2s, transform 0.2s;
 }
-.metric-box:hover { border-color: rgba(221,4,38,0.18); transform: translateY(-1px); }
+.metric-box:hover { border-color: rgba(221,4,38,0.18); transform: translateY(-1px); box-shadow: 0 10px 22px rgba(16,24,40,0.08); }
 .metric-icon-wrapper {
-  border-radius: 10px; width: 40px; height: 40px;
+  border-radius: var(--radius); width: 42px; height: 42px;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.metric-value { font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1; letter-spacing: -0.03em; }
+.metric-value { font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1; letter-spacing: 0; }
 .metric-label { font-size: 0.73rem; color: var(--muted); font-weight: 500; margin-top: 3px; }
+
+.metric-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dashboard-shell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  background: #111827;
+  color: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+}
+.dashboard-shell-title {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.dashboard-shell-text {
+  margin: 0;
+  color: rgba(255,255,255,0.72);
+  font-size: 0.83rem;
+}
+.dashboard-shell-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: var(--radius);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.cc-section-title {
+  margin: 0.25rem 0 0.75rem 0;
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0;
+}
 
 /* ── Skeleton ────────────────────────────────────────────── */
 @keyframes shimmer {
@@ -331,7 +473,16 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   .cc-nav-item { justify-content: center; padding: 10px; }
   .cc-brand { justify-content: center; padding: 1rem 0.5rem; }
   .cc-footer { justify-content: center; }
-  .block-container { padding-left: calc(var(--sidebar-w) + 1rem) !important; padding-right: 1rem !important; }
+  .block-container { padding: 1.25rem 1rem 2rem calc(var(--sidebar-w) + 1rem) !important; }
+  .dashboard-shell { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 980px) {
+  .metrics-container { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .metrics-container { grid-template-columns: 1fr; }
 }
 </style>
 """
@@ -480,42 +631,57 @@ def safe_rerun():
         st.experimental_rerun()
 
 
-def _nav_js(label: str) -> str:
-    """JS that finds a hidden Streamlit sidebar button by textContent and clicks it."""
-    return (
-        f"(function(){{"
-        f"var btns=document.querySelectorAll('button');"
-        f"for(var i=0;i<btns.length;i++){{"
-        f"if(btns[i].textContent.trim()==='{label}'){{btns[i].click();return;}}"
-        f"}}"
-        f"}})();"
-    )
-
 
 def render_custom_sidebar(user: dict, current_page: str):
+    """Render a session-safe Streamlit sidebar menu."""
     nav_items = [
-        ("Dashboard",     "home"),
-        ("Events",        "calendar"),
+        ("Dashboard", "home"),
+        ("Events", "calendar"),
         ("Announcements", "megaphone"),
-        ("Resources",     "folder-open"),
-        ("Logistics",     "truck"),
-        ("Lost & Found",  "package-search"),
-        ("Profile",       "user"),
+        ("Resources", "folder-open"),
+        ("Logistics", "truck"),
+        ("Lost & Found", "package-search"),
+        ("Profile", "user"),
     ]
 
-    # ── Hidden Streamlit sidebar buttons (real navigation) ──
+    balance = user.get("tomatos", user.get("tomato_balance", 0))
+    initials = escape("".join(w[0].upper() for w in user.get("name", "?").split()[:2]) or "?")
+    user_name = escape(user.get("name", ""))
+
     with st.sidebar:
-        for name, _ in nav_items:
-            if st.button(f"NAV:{name}", key=f"_nav_{name}"):
+        st.markdown(f"""
+<div style="display:flex;align-items:center;gap:10px;padding:0.25rem 0.25rem 0.9rem 0.25rem;
+            border-bottom:1px solid var(--border);margin-bottom:0.75rem;">
+  <div class="cc-logo"><i data-lucide="graduation-cap"></i></div>
+  <div>
+    <div style="font-weight:800;color:var(--text);font-size:0.95rem;">CampusConnect</div>
+    <div style="font-size:0.68rem;color:var(--muted);font-weight:650;">Campus operations hub</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+        for name, _icon in nav_items:
+            if current_page == name:
+                st.button(name, key=f"_nav_active_{name}", type="primary", disabled=True, use_container_width=True)
+            elif st.button(name, key=f"_nav_{name}", use_container_width=True):
                 try:
                     st.query_params["page"] = name
                 except AttributeError:
-                    try:
-                        st.experimental_set_query_params(page=name)
-                    except Exception:
-                        pass
+                    st.experimental_set_query_params(page=name)
                 safe_rerun()
-        if st.button("NAV:SignOut", key="_nav_signout"):
+
+        st.markdown(f"""
+<div style="border-top:1px solid var(--border);margin-top:0.75rem;padding:0.85rem 0.25rem 0.25rem;
+            display:flex;align-items:center;gap:9px;">
+  <div class="cc-avatar"><span>{initials}</span></div>
+  <div style="min-width:0;flex:1;">
+    <div class="cc-user-name">{user_name}</div>
+    <div class="cc-user-bal">{balance} tomatoes</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+        if st.button("Sign out", key="_nav_signout", use_container_width=True):
             from auth import logout
             logout()
             try:
@@ -527,45 +693,4 @@ def render_custom_sidebar(user: dict, current_page: str):
                     pass
             safe_rerun()
 
-    # ── Visual sidebar HTML ──────────────────────────────────
-    balance = user.get("tomatos", user.get("tomato_balance", 0))
-    initials = "".join(w[0].upper() for w in user.get("name", "?").split()[:2])
-    avatar_url = user.get("avatar_url") or ""
-    avatar_inner = (
-        f'<img src="{avatar_url}" alt="" style="width:100%;height:100%;object-fit:cover;">'
-        if avatar_url else f"<span>{initials}</span>"
-    )
-
-    nav_html = ""
-    for name, icon in nav_items:
-        active = "active" if current_page == name else ""
-        js = _nav_js(f"NAV:{name}")
-        nav_html += (
-            f'<div class="cc-nav-item {active}" onclick="{js}">'
-            f'<i data-lucide="{icon}"></i><span>{name}</span>'
-            f'</div>'
-        )
-
-    signout_js = _nav_js("NAV:SignOut")
-
-    st.markdown(f"""
-<div class="cc-sidebar">
-  <div class="cc-brand">
-    <div class="cc-logo">🍅</div>
-    <span class="cc-brand-text">CampusConnect</span>
-  </div>
-  <div class="cc-nav">
-    {nav_html}
-  </div>
-  <div class="cc-footer">
-    <div class="cc-avatar">{avatar_inner}</div>
-    <div class="cc-user">
-      <div class="cc-user-name">{user.get('name', '')}</div>
-      <div class="cc-user-bal">{balance} 🍅</div>
-    </div>
-    <button class="cc-signout" onclick="{signout_js}" title="Sign out">
-      <i data-lucide="log-out"></i>
-    </button>
-  </div>
-</div>
-{LUCIDE_CDN}""", unsafe_allow_html=True)
+    st.markdown(LUCIDE_CDN, unsafe_allow_html=True)

@@ -72,13 +72,22 @@ def render(user: dict) -> None:
 
     tomato_balance = user.get("tomatos", 0)
 
-    # --- KPI Row (4 cards) ---
-    st.markdown("""
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.75rem;">
+    st.markdown(f"""
+<div class="dashboard-shell fade-in">
+  <div>
+    <p class="dashboard-shell-title">Campus at a glance</p>
+    <p class="dashboard-shell-text">Track events, announcements, deliveries, and credits from one working hub.</p>
+  </div>
+  <div class="dashboard-shell-pill">
+    <i data-lucide="wallet" style="width:15px;height:15px;"></i>
+    {tomato_balance} tomatoes available
+  </div>
+</div>
 """, unsafe_allow_html=True)
 
+    # --- KPI Row (4 cards) ---
     kpi_html = f"""
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.75rem;">
+<div class="metrics-container">
 
   <div class="metric-box">
     <div class="metric-icon-wrapper" style="color: #A855F7; background-color: rgba(168,85,247,0.12);">
@@ -131,8 +140,7 @@ def render(user: dict) -> None:
     sec_col1, sec_col2 = st.columns([8, 2])
     with sec_col1:
         st.markdown(
-            '<h3 style="margin: 0.25rem 0 0.75rem 0; color:var(--text); font-size:1.2rem; '
-            'display:flex; align-items:center; gap:8px;">'
+            '<h3 class="cc-section-title">'
             '<i data-lucide="sparkles" style="color:#A855F7; width:20px;"></i> Upcoming Events</h3>',
             unsafe_allow_html=True
         )
@@ -157,11 +165,18 @@ def render(user: dict) -> None:
                 is_full = spots_left <= 0
 
                 bar_color = "#DD0426" if fill_pct > 80 else "#22C55E" if fill_pct < 50 else "#F59E0B"
+                banner_html = (
+                    f'<img src="{event["banner_url"]}" style="width:100%; height:100%; object-fit:cover;" />'
+                    if event.get("banner_url") else
+                    '<div style="width:100%;height:100%;background:linear-gradient(135deg,#111827,#DD0426);'
+                    'display:flex;align-items:center;justify-content:center;color:#fff;">'
+                    '<i data-lucide="calendar-days" style="width:30px;height:30px;"></i></div>'
+                )
 
                 st.markdown(f"""
 <div class="premium-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
   <div style="position:relative; height:110px; width:100%;">
-    <img src="{event['banner_url']}" style="width:100%; height:100%; object-fit:cover;" />
+    {banner_html}
     <div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.65);
                 padding:3px 8px; border-radius:6px; font-size:0.7rem; color:#fff; font-weight:600;">
       {spots_left} left

@@ -32,7 +32,7 @@ class AnnouncementService:
             return None
         except Exception as e:
             print(f"[announcement_service] get_by_id error: {e}")
-            return None
+            return next((a for a in announcement_repo.get_announcements() if a.get("id") == ann_id), None)
 
     @staticmethod
     def create(data: dict, user: dict) -> dict:

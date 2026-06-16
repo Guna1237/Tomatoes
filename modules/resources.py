@@ -1,12 +1,9 @@
 import streamlit as st
 import datetime
 import os
-import uuid
+from html import escape
 import services
 import ui_components
-
-UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 CAT_ICONS = {
     "Notes": "book-open",
@@ -17,33 +14,71 @@ CAT_ICONS = {
 }
 
 
+def _resolve_download_path(file_url: str) -> str:
+    if not file_url:
+        return ""
+    if file_url.startswith("local://"):
+        relative = file_url.removeprefix("local://").replace("/", os.sep)
+        direct = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads", relative)
+        if os.path.exists(direct):
+            return direct
+        file_name = os.path.basename(relative)
+        resource_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads", "resources")
+        for root, _, files in os.walk(resource_dir):
+            if file_name in files:
+                return os.path.join(root, file_name)
+        return ""
+    return file_url if os.path.exists(file_url) else ""
+
+
+def _file_meta(res: dict) -> str:
+    file_type = (res.get("file_type") or os.path.splitext(res.get("file_name", ""))[1].lstrip(".") or "file").upper()
+    size = res.get("file_size_mb")
+    if isinstance(size, (int, float)):
+        return f"{file_type} - {size:.1f} MB"
+    return file_type
+
+
 def _resource_card(col, res: dict, tab_prefix: str, user_id: str) -> None:
     icon = CAT_ICONS.get(res.get("category", ""), "file")
+    title = escape(res.get("title", "Untitled resource"))
+    course_code = escape(res.get("course_code", ""))
+    course_name = escape(res.get("course_name", ""))
+    category = escape(res.get("category", ""))
+    uploader = escape(res.get("uploader_name", ""))
+    created_at = str(res.get("created_at", ""))[:10]
+    downloads = res.get("downloads_count", 0)
+    bookmarks = res.get("bookmarks_count", 0)
+    meta = escape(_file_meta(res))
     col.markdown(
         f"""
-<div class="premium-card">
-  <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;">
-    <div style="background:rgba(59,130,246,0.1);border-radius:8px;width:38px;height:38px;
-                display:flex;align-items:center;justify-content:center;color:#3B82F6;flex-shrink:0;">
-      <i data-lucide="{icon}" style="width:18px;height:18px;"></i>
+<div class="premium-card" style="min-height:210px;display:flex;flex-direction:column;gap:0.85rem;">
+  <div style="display:flex;gap:12px;align-items:flex-start;">
+    <div style="background:#EFF6FF;border:1px solid rgba(37,99,235,0.14);border-radius:8px;width:44px;height:44px;
+                display:flex;align-items:center;justify-content:center;color:#2563EB;flex-shrink:0;">
+      <i data-lucide="{icon}" style="width:20px;height:20px;"></i>
     </div>
-    <div style="overflow:hidden;">
-      <h4 style="margin:0;color:var(--text);font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-        {res['title']}
+    <div style="overflow:hidden;min-width:0;flex:1;">
+      <h4 style="margin:0;color:var(--text);font-size:1rem;line-height:1.35;font-weight:800;">
+        {title}
       </h4>
-      <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">
-        <span class="category-tag">{res.get('course_code','')}</span>
-        <span class="category-tag">{res.get('category','')}</span>
+      <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;">
+        <span class="category-tag">{course_code}</span>
+        <span class="category-tag">{category}</span>
+        <span class="category-tag">{meta}</span>
       </div>
     </div>
   </div>
-  <div class="info-row" style="justify-content:space-between;font-size:0.8rem;">
-    <span>by <strong>{res.get('uploader_name','')}</strong></span>
-    <span>{str(res.get('created_at',''))[:10]}</span>
+  <div style="font-size:0.84rem;color:var(--muted);line-height:1.45;min-height:2.4em;">
+    {course_name or "General campus resource"}
   </div>
-  <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">
-    <i data-lucide="bookmark" style="width:12px;display:inline-block;vertical-align:middle;"></i>
-    {res.get('bookmarks_count', 0)} bookmarks
+  <div style="display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:0.78rem;margin-top:auto;">
+    <span>by <strong style="color:var(--text);">{uploader}</strong></span>
+    <span>{created_at}</span>
+  </div>
+  <div style="display:flex;gap:12px;color:var(--muted);font-size:0.78rem;">
+    <span><i data-lucide="bookmark" style="width:12px;display:inline-block;vertical-align:middle;"></i> {bookmarks}</span>
+    <span><i data-lucide="download" style="width:12px;display:inline-block;vertical-align:middle;"></i> {downloads}</span>
   </div>
 </div>""",
         unsafe_allow_html=True,
@@ -77,14 +112,15 @@ def _resource_card(col, res: dict, tab_prefix: str, user_id: str) -> None:
         file_url = res.get("file_url", "")
         if file_url and file_url.startswith("http"):
             st.link_button("Download", url=file_url, use_container_width=True)
-        elif file_url and os.path.exists(file_url):
+        elif _resolve_download_path(file_url):
             try:
-                with open(file_url, "rb") as f:
+                local_file = _resolve_download_path(file_url)
+                with open(local_file, "rb") as f:
                     file_bytes = f.read()
                 st.download_button(
                     label="Download",
                     data=file_bytes,
-                    file_name=os.path.basename(file_url),
+                    file_name=res.get("file_name") or os.path.basename(local_file),
                     key=f"{tab_prefix}_dl_{res['id']}",
                     use_container_width=True,
                 )
@@ -114,6 +150,26 @@ def render(user: dict) -> None:
         all_resources = services.ResourceService.get_all() or []
     except Exception:
         all_resources = []
+
+    total_downloads = sum(int(r.get("downloads_count", 0) or 0) for r in all_resources)
+    total_bookmarks = sum(int(r.get("bookmarks_count", 0) or 0) for r in all_resources)
+    unique_courses = len({r.get("course_code") for r in all_resources if r.get("course_code")})
+    st.markdown(f"""
+<div class="metrics-container" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+  <div class="metric-box"><div class="metric-icon-wrapper" style="background:#EFF6FF;color:#2563EB;">
+    <i data-lucide="files" style="width:18px;height:18px;"></i></div>
+    <div class="metric-info"><span class="metric-value">{len(all_resources)}</span><span class="metric-label">Shared Files</span></div>
+  </div>
+  <div class="metric-box"><div class="metric-icon-wrapper" style="background:#ECFDF3;color:#0F9F6E;">
+    <i data-lucide="book-open" style="width:18px;height:18px;"></i></div>
+    <div class="metric-info"><span class="metric-value">{unique_courses}</span><span class="metric-label">Courses Covered</span></div>
+  </div>
+  <div class="metric-box"><div class="metric-icon-wrapper" style="background:#FFF7ED;color:#D97706;">
+    <i data-lucide="activity" style="width:18px;height:18px;"></i></div>
+    <div class="metric-info"><span class="metric-value">{total_downloads + total_bookmarks}</span><span class="metric-label">Saves & Downloads</span></div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
     # ── Tab 1: Browse Resources ──────────────────────────────────────────────
     with tab_browse:
@@ -171,7 +227,14 @@ def render(user: dict) -> None:
     # ── Tab 3: Upload Resource ───────────────────────────────────────────────
     with tab_upload:
         st.markdown(
-            "<h3 style='margin-top:0;color:var(--text);font-size:1.15rem;'>Share Academic Material</h3>",
+            """
+<div class="premium-card" style="border-color:rgba(37,99,235,0.18);">
+  <h3 style="margin:0 0 6px 0;color:var(--text);font-size:1.12rem;">Share Academic Material</h3>
+  <p style="margin:0;color:var(--muted);font-size:0.86rem;line-height:1.5;">
+    Upload PDFs, docs, slides, or lab material. Files are stored locally when cloud storage is unavailable.
+  </p>
+</div>
+""",
             unsafe_allow_html=True,
         )
 
@@ -186,7 +249,7 @@ def render(user: dict) -> None:
 
             res_cat = st.selectbox("Category *", ["Notes", "PYQs", "PPTs", "Study guides", "Lab Manuals"])
             uploaded_file = st.file_uploader(
-                "Upload file", type=["pdf", "pptx", "ppt", "docx", "doc"]
+                "Upload file", type=["pdf", "pptx", "ppt", "docx", "doc", "png", "jpg", "jpeg"]
             )
 
             submitted = st.form_submit_button("Upload & Share", type="primary")
@@ -203,16 +266,15 @@ def render(user: dict) -> None:
                         local_path = os.path.join(UPLOAD_DIR, safe_name)
                         try:
                             with st.spinner("Uploading…"):
-                                with open(local_path, "wb") as f:
-                                    f.write(uploaded_file.getbuffer())
+                                file_bytes = uploaded_file.getvalue()
                                 services.ResourceService.upload(
                                     title=res_title,
                                     course_code=res_code,
                                     course_name=res_name,
                                     category=res_cat,
-                                    file_url=local_path,
-                                    uploader_id=user_id,
-                                    uploader_name=user["name"],
+                                    file_bytes=file_bytes,
+                                    file_name=uploaded_file.name,
+                                    uploader=user,
                                 )
                             st.success(f"'{res_title}' shared successfully!")
                             ui_components.safe_rerun()

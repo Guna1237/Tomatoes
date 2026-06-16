@@ -1,10 +1,18 @@
 import streamlit as st
 import uuid
+import os
+from pathlib import Path
 from repositories import lost_found_repo
 from repositories.notification_repo import add_notification
 from database import get_client
 from config import STORAGE_BUCKET
 from typing import Optional
+
+LOCAL_IMAGE_DIR = Path(__file__).resolve().parent.parent / "uploads" / "lost_found"
+
+
+def _safe_image_name(image_name: str) -> str:
+    return os.path.basename(image_name).replace("\\", "_").replace("/", "_")
 
 
 class LostFoundService:
@@ -40,8 +48,9 @@ class LostFoundService:
 
         image_url = None
         if image_bytes and image_name:
+            safe_image_name = _safe_image_name(image_name)
+            unique_name = f"{uuid.uuid4()}_{safe_image_name}"
             try:
-                unique_name = f"{uuid.uuid4()}_{image_name}"
                 storage_path = f"lost_found/{unique_name}"
                 client = get_client()
                 client.storage.from_(STORAGE_BUCKET).upload(storage_path, image_bytes)
@@ -53,6 +62,10 @@ class LostFoundService:
                 )
             except Exception as e:
                 print(f"[lost_found_service] Image upload error (non-fatal): {e}")
+                LOCAL_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+                local_path = LOCAL_IMAGE_DIR / unique_name
+                local_path.write_bytes(image_bytes)
+                image_url = str(local_path)
 
         data = {
             "title": title,

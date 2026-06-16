@@ -1,10 +1,17 @@
 import streamlit as st
 import uuid
 import os
+from pathlib import Path
 from repositories import resource_repo
 from database import get_client
 from config import STORAGE_BUCKET, MAX_FILE_SIZE_MB, ALLOWED_FILE_TYPES
 from typing import Optional
+
+LOCAL_UPLOAD_DIR = Path(__file__).resolve().parent.parent / "uploads" / "resources"
+
+
+def _safe_file_name(file_name: str) -> str:
+    return os.path.basename(file_name).replace("\\", "_").replace("/", "_")
 
 
 class ResourceService:
@@ -40,9 +47,10 @@ class ResourceService:
         file_name: str,
         uploader: dict,
     ) -> dict:
-        ext = os.path.splitext(file_name)[1].lower().lstrip(".")
-        if ext not in ALLOWED_FILE_TYPES:
-            raise ValueError(f"File type '.{ext}' is not allowed. Allowed types: {', '.join(ALLOWED_FILE_TYPES)}")
+        ext_with_dot = os.path.splitext(file_name)[1].lower()
+        ext = ext_with_dot.lstrip(".")
+        if ext_with_dot not in ALLOWED_FILE_TYPES:
+            raise ValueError(f"File type '{ext_with_dot}' is not allowed. Allowed types: {', '.join(ALLOWED_FILE_TYPES)}")
 
         size_mb = len(file_bytes) / (1024 * 1024)
         if size_mb > MAX_FILE_SIZE_MB:
@@ -51,13 +59,21 @@ class ResourceService:
         if not title or not title.strip():
             raise ValueError("Resource title cannot be empty.")
 
-        unique_name = f"{uuid.uuid4()}_{file_name}"
+        safe_file_name = _safe_file_name(file_name)
+        unique_name = f"{uuid.uuid4()}_{safe_file_name}"
         storage_path = f"resources/{uploader['id']}/{unique_name}"
 
-        client = get_client()
-        client.storage.from_(STORAGE_BUCKET).upload(storage_path, file_bytes)
-        public_url_response = client.storage.from_(STORAGE_BUCKET).get_public_url(storage_path)
-        file_url = public_url_response if isinstance(public_url_response, str) else public_url_response.get("publicURL", "")
+        try:
+            client = get_client()
+            client.storage.from_(STORAGE_BUCKET).upload(storage_path, file_bytes)
+            public_url_response = client.storage.from_(STORAGE_BUCKET).get_public_url(storage_path)
+            file_url = public_url_response if isinstance(public_url_response, str) else public_url_response.get("publicURL", "")
+        except Exception as e:
+            print(f"[resource_service] Storage upload fallback: {e}")
+            LOCAL_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+            local_path = LOCAL_UPLOAD_DIR / unique_name
+            local_path.write_bytes(file_bytes)
+            file_url = str(local_path)
 
         data = {
             "title": title.strip(),
@@ -65,7 +81,7 @@ class ResourceService:
             "course_name": course_name.strip(),
             "category": category,
             "file_url": file_url,
-            "file_name": file_name,
+            "file_name": safe_file_name,
             "file_type": ext,
             "file_size_mb": round(size_mb, 2),
             "uploader_id": uploader["id"],

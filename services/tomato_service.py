@@ -1,6 +1,7 @@
 import streamlit as st
 from repositories import user_repo
 from database import get_client
+import local_database
 from typing import Optional
 
 
@@ -21,19 +22,22 @@ class TomatoService:
         try:
             current_balance = TomatoService.get_balance(user_id)
             new_balance = current_balance + amount
-            user_repo.update_tomato_balance(user_id, new_balance)
-
-            client = get_client()
             txn_data = {
                 "user_id": user_id,
                 "amount": amount,
                 "description": description,
-                "type": txn_type,
+                "transaction_type": txn_type,
                 "balance_after": new_balance,
             }
             if related_id:
-                txn_data["related_id"] = related_id
-            client.table("tomato_transactions").insert(txn_data).execute()
+                txn_data["related_request_id"] = related_id
+            user_repo.update_tomato_balance(user_id, new_balance)
+            try:
+                client = get_client()
+                client.table("tomato_transactions").insert(txn_data).execute()
+            except Exception as e:
+                print(f"[tomato_service] credit transaction fallback: {e}")
+                local_database.insert("tomato_transactions", {**txn_data, "type": txn_type, "related_id": related_id})
             st.cache_data.clear()
             return True
         except Exception as e:
@@ -54,19 +58,22 @@ class TomatoService:
 
         try:
             new_balance = current_balance - amount
-            user_repo.update_tomato_balance(user_id, new_balance)
-
-            client = get_client()
             txn_data = {
                 "user_id": user_id,
                 "amount": -amount,
                 "description": description,
-                "type": txn_type,
+                "transaction_type": txn_type,
                 "balance_after": new_balance,
             }
             if related_id:
-                txn_data["related_id"] = related_id
-            client.table("tomato_transactions").insert(txn_data).execute()
+                txn_data["related_request_id"] = related_id
+            user_repo.update_tomato_balance(user_id, new_balance)
+            try:
+                client = get_client()
+                client.table("tomato_transactions").insert(txn_data).execute()
+            except Exception as e:
+                print(f"[tomato_service] debit transaction fallback: {e}")
+                local_database.insert("tomato_transactions", {**txn_data, "type": txn_type, "related_id": related_id})
             st.cache_data.clear()
             return True, ""
         except Exception as e:
@@ -84,7 +91,11 @@ class TomatoService:
                 .order("created_at", desc=True)
                 .execute()
             )
-            return result.data or []
+            if result.data:
+                return result.data
+            rows = local_database.all_rows("tomato_transactions", lambda t: t.get("user_id") == user_id)
+            return sorted(rows, key=lambda t: t.get("created_at", ""), reverse=True)
         except Exception as e:
             print(f"[tomato_service] get_transactions error: {e}")
-            return []
+            rows = local_database.all_rows("tomato_transactions", lambda t: t.get("user_id") == user_id)
+            return sorted(rows, key=lambda t: t.get("created_at", ""), reverse=True)

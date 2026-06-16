@@ -1,13 +1,16 @@
 import streamlit as st
+import base64
+import mimetypes
 import os
 import uuid
+from html import escape
 import services
 import ui_components
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-CATEGORIES = ["Electronics", "IDs", "Books", "Accessories", "Clothing", "Keys", "Other"]
+CATEGORIES = ["Electronics", "ID Cards", "Books", "Accessories", "Clothing", "Keys", "Bags", "Other"]
 
 
 def _type_badge(item_type: str) -> str:
@@ -32,6 +35,32 @@ def _status_badge(status: str) -> str:
     return (
         f'<span style="background:{bg};border:1px solid {border};color:{c};'
         f'border-radius:20px;padding:2px 10px;font-size:0.75rem;font-weight:600;">{status}</span>'
+    )
+
+
+def _image_html(image_url: str, item_type: str) -> str:
+    if image_url and os.path.exists(image_url):
+        mime = mimetypes.guess_type(image_url)[0] or "image/jpeg"
+        with open(image_url, "rb") as fh:
+            encoded = base64.b64encode(fh.read()).decode("ascii")
+        return (
+            f'<img src="data:{mime};base64,{encoded}" '
+            'style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;display:block;" />'
+        )
+    if image_url and image_url.startswith("http"):
+        return (
+            f'<img src="{escape(image_url)}" '
+            'style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;display:block;" />'
+        )
+    icon = "search" if item_type == "Lost" else "package-check"
+    label = "No photo added"
+    return (
+        '<div style="height:180px;border-radius:8px 8px 0 0;background:linear-gradient(135deg,#F8FAFC,#EEF2F7);'
+        'border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;'
+        'color:var(--muted);gap:8px;">'
+        f'<i data-lucide="{icon}" style="width:30px;height:30px;"></i>'
+        f'<span style="font-size:0.8rem;font-weight:700;">{label}</span>'
+        '</div>'
     )
 
 
@@ -115,6 +144,26 @@ def render(user: dict) -> None:
     except Exception:
         items = []
 
+    open_count = sum(1 for i in items if i.get("status", "Open") == "Open")
+    claimed_count = sum(1 for i in items if i.get("status") == "Claimed")
+    resolved_count = sum(1 for i in items if i.get("status") == "Resolved")
+    st.markdown(f"""
+<div class="metrics-container" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+  <div class="metric-box"><div class="metric-icon-wrapper" style="background:#EFF6FF;color:#2563EB;">
+    <i data-lucide="search" style="width:18px;height:18px;"></i></div>
+    <div class="metric-info"><span class="metric-value">{open_count}</span><span class="metric-label">Open Reports</span></div>
+  </div>
+  <div class="metric-box"><div class="metric-icon-wrapper" style="background:#FFF7ED;color:#D97706;">
+    <i data-lucide="hand" style="width:18px;height:18px;"></i></div>
+    <div class="metric-info"><span class="metric-value">{claimed_count}</span><span class="metric-label">Being Claimed</span></div>
+  </div>
+  <div class="metric-box"><div class="metric-icon-wrapper" style="background:#ECFDF3;color:#0F9F6E;">
+    <i data-lucide="check-circle-2" style="width:18px;height:18px;"></i></div>
+    <div class="metric-info"><span class="metric-value">{resolved_count}</span><span class="metric-label">Resolved</span></div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
     filtered = items
     if type_filter != "All":
         filtered = [i for i in filtered if i.get("item_type") == type_filter]
@@ -149,48 +198,43 @@ def render(user: dict) -> None:
         status = item.get("status", "Open")
         is_reporter = item.get("reporter_id") == user_id
         image_url = item.get("image_url", "")
+        item_type = item.get("item_type", "Lost")
+        image_block = _image_html(image_url, item_type)
+        title = escape(item.get("title", ""))
+        description = escape(item.get("description", ""))
+        category = escape(item.get("category", ""))
+        location = escape(item.get("location", ""))
+        reporter = escape(item.get("reporter_name", ""))
+        created_at = str(item.get("created_at", ""))[:10]
 
         with col:
-            # Image
-            if image_url:
-                if os.path.exists(image_url):
-                    try:
-                        st.image(image_url, use_container_width=True, clamp=True)
-                    except Exception:
-                        pass
-                elif image_url.startswith("http"):
-                    try:
-                        st.markdown(
-                            f'<img src="{image_url}" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />',
-                            unsafe_allow_html=True,
-                        )
-                    except Exception:
-                        pass
-
             st.markdown(
                 f"""
-<div class="premium-card">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+<div class="premium-card" style="padding:0;overflow:hidden;">
+  {image_block}
+  <div style="padding:1rem;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:10px;">
     <div>
-      <span class="category-tag">{item.get('category','')}</span>
-      <h4 style="margin:6px 0 0 0;color:var(--text);font-size:1rem;font-weight:600;">{item.get('title','')}</h4>
+      <span class="category-tag">{category}</span>
+      <h4 style="margin:7px 0 0 0;color:var(--text);font-size:1rem;font-weight:800;line-height:1.35;">{title}</h4>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-      {_type_badge(item.get('item_type','Lost'))}
+      {_type_badge(item_type)}
       {_status_badge(status)}
     </div>
   </div>
   <p style="margin:0 0 10px 0;color:var(--muted);font-size:0.875rem;line-height:1.5;
-     max-height:60px;overflow:hidden;text-overflow:ellipsis;">
-    {item.get('description','')}
+     min-height:42px;max-height:66px;overflow:hidden;text-overflow:ellipsis;">
+    {description}
   </p>
   <div class="info-row" style="font-size:0.8rem;margin-bottom:4px;">
     <i data-lucide="map-pin" style="width:12px;"></i>
-    <span><strong>{item.get('location','')}</strong></span>
+    <span><strong>{location}</strong></span>
   </div>
   <div class="info-row" style="font-size:0.78rem;justify-content:space-between;">
-    <span>by <strong>{item.get('reporter_name','')}</strong></span>
-    <span>{str(item.get('created_at',''))[:10]}</span>
+    <span>by <strong>{reporter}</strong></span>
+    <span>{created_at}</span>
+  </div>
   </div>
 </div>""",
                 unsafe_allow_html=True,
@@ -225,7 +269,7 @@ def render(user: dict) -> None:
                                     title=f"Claim on '{item['title']}'",
                                     content=(
                                         f"{user['name']} ({user.get('email','')}) has claimed your "
-                                        f"{item.get('type','').lower()} item '{item['title']}'. "
+                                        f"{item_type.lower()} item '{item['title']}'. "
                                         f"Please contact them to arrange handover."
                                     ),
                                 )

@@ -262,8 +262,6 @@ def render(user: dict) -> None:
                     if size_mb > 25:
                         st.error(f"File is {size_mb:.1f} MB — maximum allowed size is 25 MB.")
                     else:
-                        safe_name = f"{uuid.uuid4().hex[:8]}_{uploaded_file.name}"
-                        local_path = os.path.join(UPLOAD_DIR, safe_name)
                         try:
                             with st.spinner("Uploading…"):
                                 file_bytes = uploaded_file.getvalue()

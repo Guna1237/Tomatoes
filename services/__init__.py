@@ -160,10 +160,20 @@ class ResourceService:
     @staticmethod
     def upload(
         title: str, course_code: str, course_name: str, category: str,
-        file_url: str, uploader_id: str, uploader_name: str,
+        file_url: Optional[str] = None, uploader_id: Optional[str] = None, uploader_name: str = "",
+        file_bytes: Optional[bytes] = None, file_name: Optional[str] = None, uploader: Optional[dict] = None,
     ) -> dict:
-        """Upload from a local file path (modules save locally first)."""
-        uploader = {"id": uploader_id, "name": uploader_name}
+        """Upload a resource from bytes or from the legacy local file path API."""
+        uploader = uploader or {"id": uploader_id, "name": uploader_name}
+        if file_bytes is not None and file_name:
+            return _ResService.upload(
+                title, course_code, course_name, category,
+                file_bytes, file_name, uploader,
+            )
+
+        if not file_url:
+            raise ValueError("A file is required.")
+
         if os.path.exists(file_url):
             with open(file_url, "rb") as fh:
                 file_bytes = fh.read()

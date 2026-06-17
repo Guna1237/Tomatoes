@@ -905,21 +905,22 @@ def render_top_menu(current_page: str):
         "Lost & Found",
         "Profile",
     ]
+    active_page = current_page if current_page in nav_items else "Dashboard"
     st.markdown('<div class="cc-top-menu-label">Menu</div>', unsafe_allow_html=True)
     if hasattr(st, "pills"):
         selected = st.pills(
             "Menu",
             nav_items,
-            default=current_page if current_page in nav_items else "Dashboard",
-            key="_top_nav_pills",
+            default=active_page,
+            key=f"_top_nav_pills_{active_page}",
             label_visibility="collapsed",
         )
     else:
         selected = st.selectbox(
             "Menu",
             nav_items,
-            index=nav_items.index(current_page) if current_page in nav_items else 0,
-            key="_top_nav_select",
+            index=nav_items.index(active_page),
+            key=f"_top_nav_select_{active_page}",
             label_visibility="collapsed",
         )
     if selected and selected != current_page:

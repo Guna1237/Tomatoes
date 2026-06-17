@@ -208,6 +208,12 @@ except AttributeError:
     # Older Streamlit fallback
     qp = st.experimental_get_query_params()
     current_page = qp.get("page", ["Dashboard"])[0]
+if isinstance(current_page, list):
+    current_page = current_page[0] if current_page else ""
+if not current_page:
+    current_page = st.session_state.get("current_page", "Dashboard")
+if current_page not in PAGE_MAP and current_page != "SignOut":
+    current_page = "Dashboard"
 
 # Keep session_state in sync
 st.session_state["current_page"] = current_page

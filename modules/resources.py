@@ -139,10 +139,11 @@ def render(user: dict) -> None:
 
     user_id = user["id"]
 
-    tab_browse, tab_bookmarks, tab_upload = st.tabs([
+    tab_browse, tab_bookmarks, tab_upload, tab_ai = st.tabs([
         "Browse Resources",
         "My Bookmarks",
         "Upload Resource",
+        "AI Study Planner",
     ])
 
     # Fetch once, reuse across tabs
@@ -278,5 +279,57 @@ def render(user: dict) -> None:
                             ui_components.safe_rerun()
                         except Exception as e:
                             st.error(f"Upload failed: {e}")
+
+    with tab_ai:
+        st.markdown(
+            """
+<div class="premium-card" style="border-color:rgba(15,159,110,0.2);">
+  <h3 style="margin:0 0 6px 0;color:var(--text);font-size:1.12rem;">AI Study Planner</h3>
+  <p style="margin:0;color:var(--muted);font-size:0.86rem;line-height:1.5;">
+    Turn the current resource library into a focused study path for an exam, assignment, or revision goal.
+  </p>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        if not services.AIStudyService.is_configured():
+            st.info(
+                "Add OPENAI_API_KEY to `.streamlit/secrets.toml` or your environment to enable AI planning. "
+                "Optional: set OPENAI_MODEL to choose a different model."
+            )
+        else:
+            st.caption(f"Using OpenAI model: {services.AIStudyService.model_name()}")
+
+        with st.form("ai_study_plan_form"):
+            study_goal = st.text_area(
+                "Study goal",
+                placeholder="e.g. I have a DSA quiz tomorrow and need a 2-hour revision plan.",
+                height=110,
+            )
+            submitted_ai = st.form_submit_button(
+                "Generate Study Plan",
+                type="primary",
+                use_container_width=True,
+                disabled=not services.AIStudyService.is_configured(),
+            )
+
+        if submitted_ai:
+            if not study_goal.strip():
+                st.error("Tell the planner what you are studying for.")
+            else:
+                try:
+                    with st.spinner("Building your study plan..."):
+                        st.session_state["ai_resource_plan"] = services.AIStudyService.generate_resource_plan(
+                            study_goal.strip(),
+                            all_resources,
+                            user,
+                        )
+                except Exception as e:
+                    st.error(f"AI planner failed: {e}")
+
+        if st.session_state.get("ai_resource_plan"):
+            st.markdown("#### Suggested Plan")
+            st.markdown(st.session_state["ai_resource_plan"])
 
     st.markdown(ui_components.LUCIDE_CDN, unsafe_allow_html=True)

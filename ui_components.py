@@ -1,6 +1,5 @@
 import streamlit as st
 from html import escape
-from urllib.parse import quote
 
 LUCIDE_CDN = '<script src="https://unpkg.com/lucide@latest"></script><script>setTimeout(()=>{if(window.lucide)lucide.createIcons();},150);</script>'
 
@@ -181,6 +180,107 @@ div[data-testid="stButton"] > button[kind="secondary"] {
 div[data-testid="stButton"] > button[kind="secondary"]:hover {
   border-color: var(--red) !important;
   background: rgba(221,4,38,0.04) !important;
+}
+
+button,
+button *,
+div[data-testid^="stBaseButton"] *,
+div[data-testid="stButton"] button *,
+div[data-testid="stDownloadButton"] button * {
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+div[data-testid="stButton"] button,
+div[data-testid="stDownloadButton"] button,
+div[data-testid^="stBaseButton-secondary"],
+div[data-testid^="stBaseButton-tertiary"] {
+  background: #FFFFFF !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+  opacity: 1 !important;
+}
+
+div[data-testid="stButton"] button[kind="primary"],
+button[kind="primaryFormSubmit"],
+button[data-testid="stBaseButton-primaryFormSubmit"],
+div[data-testid^="stBaseButton-primary"] {
+  background: var(--red) !important;
+  color: #FFFFFF !important;
+  border-color: var(--red) !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+}
+
+button:disabled,
+button[disabled],
+div[data-testid="stButton"] button:disabled,
+div[data-testid="stDownloadButton"] button:disabled {
+  background: #FFF1F3 !important;
+  color: var(--red) !important;
+  border-color: rgba(221,4,38,0.18) !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: var(--red) !important;
+}
+
+div[data-testid="stButton"] button[kind="primary"]:disabled,
+button[kind="primaryFormSubmit"]:disabled,
+button[data-testid="stBaseButton-primaryFormSubmit"]:disabled,
+div[data-testid^="stBaseButton-primary"]:disabled {
+  background: var(--red) !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+}
+
+div[data-testid="stPills"] button,
+div[data-testid="stPills"] button * {
+  color: var(--text) !important;
+  -webkit-text-fill-color: var(--text) !important;
+}
+
+div[data-testid="stPills"] button[aria-pressed="true"],
+div[data-testid="stPills"] button[aria-selected="true"] {
+  background: #FFF1F3 !important;
+  border-color: rgba(221,4,38,0.22) !important;
+  color: var(--red) !important;
+  -webkit-text-fill-color: var(--red) !important;
+}
+
+/* Streamlit pills/segmented controls can ignore normal button rules in dark themes. */
+button[kind="pills"],
+button[kind="secondary"],
+button[data-testid*="stBaseButton-pills"],
+button[data-testid="stBaseButton-secondary"],
+div[data-testid="stPills"] button,
+div[data-testid="stPills"] [role="button"] {
+  background: #FFFFFF !important;
+  color: var(--text) !important;
+  -webkit-text-fill-color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  opacity: 1 !important;
+}
+
+button[kind="pills"] *,
+button[kind="secondary"] *,
+button[data-testid*="stBaseButton-pills"] *,
+button[data-testid="stBaseButton-secondary"] *,
+div[data-testid="stPills"] button *,
+div[data-testid="stPills"] [role="button"] * {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+  opacity: 1 !important;
+}
+
+button[kind="pills"][aria-pressed="true"],
+button[kind="pills"][aria-selected="true"],
+button[data-testid*="stBaseButton-pills"][aria-pressed="true"],
+button[data-testid*="stBaseButton-pills"][aria-selected="true"],
+div[data-testid="stPills"] button[aria-pressed="true"],
+div[data-testid="stPills"] button[aria-selected="true"] {
+  background: #FFF1F3 !important;
+  color: var(--red) !important;
+  -webkit-text-fill-color: var(--red) !important;
+  border-color: rgba(221,4,38,0.35) !important;
 }
 
 /* ── Tabs ────────────────────────────────────────────────── */
@@ -442,6 +542,164 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   letter-spacing: 0;
 }
 
+.cc-top-menu-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.cc-top-menu {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin: -0.25rem 0 1.25rem;
+  padding: 0.75rem;
+  width: calc(100vw - var(--sidebar-w) - 5rem);
+  max-width: 1184px;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.86);
+  border: 1px solid rgba(221,227,235,0.92);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(16px);
+}
+
+.cc-top-menu a {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 34px;
+  padding: 0 11px;
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.cc-top-menu-label {
+  flex: 0 0 auto;
+}
+
+.cc-top-menu a:hover {
+  color: var(--text);
+  background: var(--surface2);
+  border-color: rgba(17,24,39,0.06);
+}
+
+.cc-top-menu a.active {
+  color: var(--red);
+  background: #FFF1F3;
+  border-color: rgba(221,4,38,0.16);
+}
+
+.cc-login-menu-hint {
+  background: #FFF7ED;
+  border: 1px solid rgba(217,119,6,0.24);
+  color: #92400E;
+  border-radius: var(--radius);
+  padding: 0.75rem 0.85rem;
+  margin: 0.75rem 0 1rem;
+  font-size: 0.84rem;
+  font-weight: 750;
+  text-align: center;
+}
+
+.cc-login-hero {
+  padding: 1.25rem 0 0.5rem;
+}
+
+.cc-login-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  border-radius: var(--radius);
+  background: #FFF1F3;
+  color: var(--red);
+  font-size: 0.75rem;
+  font-weight: 850;
+  border: 1px solid rgba(221,4,38,0.14);
+}
+
+.cc-login-title {
+  margin: 1rem 0 0;
+  color: var(--text);
+  font-size: clamp(2.35rem, 5vw, 4.8rem);
+  line-height: 0.96;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.cc-login-copy {
+  margin: 1rem 0 1.25rem;
+  color: var(--muted);
+  max-width: 560px;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.cc-login-proof {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.cc-login-proof div {
+  background: rgba(255,255,255,0.78);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem;
+}
+
+.cc-login-proof strong {
+  display: block;
+  color: var(--text);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.cc-login-proof span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.cc-auth-panel {
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(221,227,235,0.92);
+  border-radius: var(--radius);
+  padding: 1.1rem;
+  box-shadow: var(--shadow-md);
+}
+
+.cc-auth-title {
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 850;
+  margin: 0 0 4px;
+}
+
+.cc-auth-subtitle {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
 /* ── Skeleton ────────────────────────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -600px 0; }
@@ -475,6 +733,11 @@ div[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
   .cc-footer { justify-content: center; }
   .block-container { padding: 1.25rem 1rem 2rem calc(var(--sidebar-w) + 1rem) !important; }
   .dashboard-shell { align-items: flex-start; flex-direction: column; }
+  .cc-top-menu {
+    position: static;
+    width: calc(100vw - var(--sidebar-w) - 2rem);
+  }
+  .cc-login-proof { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 980px) {
@@ -629,6 +892,43 @@ def safe_rerun():
         st.rerun()
     except AttributeError:
         st.experimental_rerun()
+
+
+def render_top_menu(current_page: str):
+    """Render a visible in-page navigation fallback above the active module."""
+    nav_items = [
+        "Dashboard",
+        "Events",
+        "Announcements",
+        "Resources",
+        "Logistics",
+        "Lost & Found",
+        "Profile",
+    ]
+    st.markdown('<div class="cc-top-menu-label">Menu</div>', unsafe_allow_html=True)
+    if hasattr(st, "pills"):
+        selected = st.pills(
+            "Menu",
+            nav_items,
+            default=current_page if current_page in nav_items else "Dashboard",
+            key="_top_nav_pills",
+            label_visibility="collapsed",
+        )
+    else:
+        selected = st.selectbox(
+            "Menu",
+            nav_items,
+            index=nav_items.index(current_page) if current_page in nav_items else 0,
+            key="_top_nav_select",
+            label_visibility="collapsed",
+        )
+    if selected and selected != current_page:
+        try:
+            st.query_params["page"] = selected
+        except AttributeError:
+            st.experimental_set_query_params(page=selected)
+        safe_rerun()
+    st.markdown("<div style='height:0.75rem;'></div>", unsafe_allow_html=True)
 
 
 

@@ -21,6 +21,7 @@ from services.resource_service import ResourceService as _ResService
 from services.logistics_service import LogisticsService as _LogService
 from services.lost_found_service import LostFoundService as _LFService
 from services.notification_service import NotificationService as _NotifService
+from services.openai_service import AIStudyService
 from services.tomato_service import TomatoService  # no API changes needed
 
 

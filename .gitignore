@@ -1,3 +1,4 @@
 campus_db.json
 .impeccable/
 uploads/
+.streamlit/openai.local.toml

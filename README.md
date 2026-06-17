@@ -56,6 +56,14 @@ CampusConnect is designed to work out of the box without any setup.
   ```
   Run the SQL queries in [schema.sql](file:///c:/Users/notgu/OneDrive/Documents/campus/schema.sql) inside your Supabase SQL editor to create all tables.
 
+### OpenAI Configuration
+The Resource Hub includes an optional AI Study Planner. Add an OpenAI API key to `.streamlit/secrets.toml` or your environment:
+```toml
+OPENAI_API_KEY = "your-openai-api-key"
+OPENAI_MODEL = "gpt-4.1-mini" # optional
+```
+If no key is configured, the app still runs normally and shows setup guidance in the AI tab.
+
 ---
 
 ## 👥 Demo Profiles for Evaluation

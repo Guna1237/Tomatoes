@@ -71,23 +71,49 @@ user = get_current_session()
 
 if not user:
     # ── Auth / login page ─────────────────────────────────────────────────────
-    _, col_auth, _ = st.columns([3, 4, 3])
-    with col_auth:
+    st.markdown(
+        """
+<style>
+  .block-container {
+    padding: 3.5rem 4vw 3rem !important;
+    max-width: 1180px !important;
+  }
+</style>
+""",
+        unsafe_allow_html=True,
+    )
+    hero_col, col_auth = st.columns([1.1, 0.9], gap="large")
+    with hero_col:
         st.markdown(
             """
-<div style="text-align:center;margin-top:3rem;margin-bottom:2rem;" class="fade-in">
-  <h1 style="color:#DD0426;margin:0;font-size:2.4rem;font-weight:800;
-      display:flex;align-items:center;justify-content:center;gap:10px;">
-    <i data-lucide="graduation-cap" style="width:40px;height:40px;color:#DD0426;"></i>
+<div class="cc-login-hero fade-in">
+  <div class="cc-login-kicker"><i data-lucide="graduation-cap" style="width:15px;height:15px;"></i> Campus operations hub</div>
+  <h1 class="cc-login-title">
     CampusConnect
   </h1>
-  <p style="color:var(--muted);margin-top:8px;font-size:1rem;">
-    The all-in-one campus activity portal.
+  <p class="cc-login-copy">
+    A single workspace for campus events, announcements, resource sharing, peer logistics, lost items, and tomato credits.
   </p>
-</div>""",
+  <div class="cc-login-proof">
+    <div><strong>6</strong><span>Core workflows</span></div>
+    <div><strong>24/7</strong><span>Local fallback mode</span></div>
+    <div><strong>AI</strong><span>Study planning</span></div>
+  </div>
+</div>
+""",
             unsafe_allow_html=True,
         )
 
+    with col_auth:
+        st.markdown(
+            """
+<div class="cc-auth-panel fade-in">
+  <h2 class="cc-auth-title">Sign in to continue</h2>
+  <p class="cc-auth-subtitle">Use your university account or pick a demo profile. The menu appears immediately after sign in.</p>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
         auth_mode = st.radio("", ["Sign In", "Create Account"], horizontal=True, label_visibility="collapsed")
 
         with st.form("auth_form"):
@@ -125,6 +151,9 @@ if not user:
         # Demo quick-login profiles
         st.markdown(
             """
+<div class="cc-login-menu-hint">
+  Menu appears after sign in. For the demo, click <strong>Student</strong> below.
+</div>
 <div class="premium-card" style="margin-top:1.5rem;border-color:rgba(168,85,247,0.25);">
   <h4 style="margin:0 0 0.5rem 0;color:#A855F7;font-size:0.9rem;text-align:center;
       display:flex;align-items:center;justify-content:center;gap:6px;">
@@ -180,6 +209,7 @@ st.session_state["current_page"] = current_page
 
 # ── Render sidebar ────────────────────────────────────────────────────────────
 ui_components.render_custom_sidebar(user, current_page)
+ui_components.render_top_menu(current_page)
 
 # ── Handle sign-out ───────────────────────────────────────────────────────────
 if current_page == "SignOut":

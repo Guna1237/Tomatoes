@@ -114,7 +114,12 @@ if not user:
 """,
             unsafe_allow_html=True,
         )
-        auth_mode = st.radio("", ["Sign In", "Create Account"], horizontal=True, label_visibility="collapsed")
+        auth_mode = st.radio(
+            "Authentication mode",
+            ["Sign In", "Create Account"],
+            horizontal=True,
+            label_visibility="collapsed",
+        )
 
         with st.form("auth_form"):
             email_input = st.text_input("University Email", placeholder="student@university.edu")
@@ -209,7 +214,8 @@ st.session_state["current_page"] = current_page
 
 # ── Render sidebar ────────────────────────────────────────────────────────────
 ui_components.render_custom_sidebar(user, current_page)
-ui_components.render_top_menu(current_page)
+if hasattr(ui_components, "render_top_menu"):
+    ui_components.render_top_menu(current_page)
 
 # ── Handle sign-out ───────────────────────────────────────────────────────────
 if current_page == "SignOut":

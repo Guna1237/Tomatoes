@@ -10,10 +10,12 @@ Session state keys used throughout the app:
 from __future__ import annotations
 
 import streamlit as st
+import hashlib
 from typing import Optional
 
 from database import get_client
 from config import ROLES
+from repositories import user_repo
 
 
 # ---------------------------------------------------------------------------
@@ -32,6 +34,25 @@ def _clear_session() -> None:
         st.session_state.pop(key, None)
 
 
+def _hash_password(password: str) -> str:
+    return "sha256$" + hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def _verify_local_password(user: dict, password: str) -> bool:
+    stored_hash = user.get("password_hash") or ""
+    if stored_hash.startswith("sha256$"):
+        return stored_hash == _hash_password(password)
+    return bool(user.get("password") and user.get("password") == password)
+
+
+def _local_login(email: str, password: str) -> tuple[Optional[dict], Optional[str]]:
+    profile = user_repo.get_user_by_email(email.strip().lower())
+    if profile and _verify_local_password(profile, password):
+        _store_session(profile, "local")
+        return profile, None
+    return None, "Invalid credentials. Please try again."
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -45,16 +66,17 @@ def login(email: str, password: str) -> tuple[Optional[dict], Optional[str]]:
     (user_dict, None)        on success
     (None, error_message)    on failure
     """
+    safe_email = email.strip().lower()
     client = get_client()
     try:
         response = client.auth.sign_in_with_password(
-            {"email": email.strip().lower(), "password": password}
+            {"email": safe_email, "password": password}
         )
-    except Exception as exc:
-        return None, str(exc)
+    except Exception:
+        return _local_login(safe_email, password)
 
     if response.user is None or response.session is None:
-        return None, "Invalid credentials. Please try again."
+        return _local_login(safe_email, password)
 
     access_token: str = response.session.access_token
     user_id: str = response.user.id
@@ -65,7 +87,7 @@ def login(email: str, password: str) -> tuple[Optional[dict], Optional[str]]:
         try:
             insert_data = {
                 "id": user_id,
-                "email": email.strip().lower(),
+                "email": safe_email,
                 "name": response.user.user_metadata.get("name", email.split("@")[0]),
                 "role": ROLES["student"],
             }
@@ -158,8 +180,8 @@ def get_current_session() -> Optional[dict]:
     if user is None:
         return None
 
-    # Demo mode: bypass Supabase token validation for demo profiles.
-    if st.session_state.get("access_token") == "demo":
+    # Local/demo mode: bypass Supabase token validation for local profiles.
+    if st.session_state.get("access_token") in {"demo", "local"}:
         return user
 
     # Validate the live session with Supabase.

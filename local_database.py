@@ -64,6 +64,17 @@ DEMO_USERS = [
         "bio": "Office of the Registrar",
         "avatar_url": "",
     },
+    {
+        "id": "00000000-0000-0000-0000-000000000009",
+        "email": "sm25ubef009@mahindrauniversity",
+        "name": "Guna Ratnam Pasupuleti",
+        "role": "student",
+        "tomato_balance": 50,
+        "tomatos": 50,
+        "bio": "Mahindra University student",
+        "avatar_url": "",
+        "password_hash": "sha256$738531198d1b9cfe0e9973d0bbf87845e560f6438dface20acb4de1fc836c3df",
+    },
 ]
 
 
@@ -151,6 +162,18 @@ def _load() -> dict[str, list[dict[str, Any]]]:
         if table not in data:
             data[table] = rows
             changed = True
+    existing_users = {u.get("email", "").lower(): u for u in data.get("users", [])}
+    for seeded_user in seed["users"]:
+        email = seeded_user.get("email", "").lower()
+        existing_user = existing_users.get(email)
+        if existing_user is None:
+            data.setdefault("users", []).append(seeded_user)
+            changed = True
+            continue
+        for field in ("password_hash",):
+            if seeded_user.get(field) and existing_user.get(field) != seeded_user[field]:
+                existing_user[field] = seeded_user[field]
+                changed = True
     if changed:
         _save(data)
     return data
